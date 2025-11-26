@@ -5,12 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2fc38b45-a8c2-49f7-b85c-2c0b5a3a0149" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/data/spoc3/cubes/ISS/Initial_Config.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/spoc3/cubes/ISS/Initial_Cube_Types.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/spoc3/cubes/ISS/Target_Config.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/spoc3/cubes/ISS/Target_Cube_Types.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/problems/ISS.json" beforeDir="false" afterPath="$PROJECT_DIR$/problems/ISS.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/solver/baselines/iss/random_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/solver/baselines/iss/random_search.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CubeMoveset.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/CubeMoveset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/programmable_cubes_UDP.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/programmable_cubes_UDP.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/submission_helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/submission_helper.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,17 +36,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.random_search.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/STORM/Documents/GitHub/G4-Programmable-Cubes/data/spoc3/cubes/ISS"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.random_search.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/STORM/Documents/GitHub/G4-Programmable-Cubes/data/spoc3/cubes/ISS&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\STORM\Documents\GitHub\G4-Programmable-Cubes\data\spoc3\cubes\ISS" />
