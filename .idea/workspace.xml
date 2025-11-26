@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2fc38b45-a8c2-49f7-b85c-2c0b5a3a0149" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/problems/ISS.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/solver/baselines/iss/random_search.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/solver/baselines/iss/submit_random_search_iss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/solver/heuristics/iss/greedy_solver.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/solver/heuristics/iss/submit_greedy_iss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/solver/optimizers/iss/ga_solver.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/solver/optimizers/iss/submit_ga_iss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/solver/results/iss/iss_algorithm_analysis.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/solver/test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CubeMoveset.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/programmable_cubes_UDP.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/submission_helper.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/submissions/genetic_algorithm_iss_submission.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/submissions/greedy_iss_submission.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/submissions/random_search_iss_submission.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="361FWlHLnTTbsTNm5J2lolO9S8F" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/STORM/Documents/GitHub/G4-Programmable-Cubes/solver/results/iss"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\STORM\Documents\GitHub\G4-Programmable-Cubes\solver\results\iss" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-4e2b1448bda8-9a97661f3031-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.27397.106" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2fc38b45-a8c2-49f7-b85c-2c0b5a3a0149" name="Changes" comment="" />
+      <created>1764166221900</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1764166221900</updated>
+    </task>
+    <servers />
+  </component>
+</project>
