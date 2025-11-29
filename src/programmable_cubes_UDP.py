@@ -169,3 +169,230 @@ class programmable_cubes_UDP:
 
         plt.tight_layout()
         # plt.show()
+
+############################################################################################################################################
+
+
+##### FITNESS FUNCTION
+############################################################################################################################################
+
+ALPHA = 0.1
+BETA = 1 - ALPHA
+
+
+def fitness_function(cube_ensemble, steps_fraction, offset, num_cube_types, init_cube_types, target_cube_types,
+                     target_cubes):
+    '''
+    Fitness function used to evaluate a chromosome.
+
+    Measures how well the final cube configuration fits the target configuration.
+    Takes also into account how fast the final cube configuration has been reached (i.e., the number of pivoting operations)!
+    Note: cubes of the same type are interchangable without affecting the fitness.
+
+    Args:
+        cube_ensemble: the ProgrammableCubes Object containing the cube positions.
+        steps_fraction: number of pivots required divided by number of maximum pivots allowed.
+        num_cube_types: number of different cube types.
+        init_cube_types: list containing cube type of each initial cube. Sorted the same way as initial cube positions.
+        cube_types: list containing cube type of each target cube. Sorted the same way as target cube positions.
+        target_cubes: list of target cube positions.
+    Returns:
+        score: fitness of the chromosome (float)
+    '''
+    num_correct_cubes = 0
+    num_total_cubes = len(cube_ensemble.cube_position)
+    for types in range(num_cube_types):
+        target_list = target_cubes[target_cube_types == types].tolist()
+        final_list = cube_ensemble.cube_position[init_cube_types == types].tolist()
+        overlap = [cube in final_list for cube in target_list]
+        num_correct_cubes += np.sum(overlap)
+    cube_fraction = num_correct_cubes / num_total_cubes
+    score = BETA * cube_fraction + ALPHA * (1 - steps_fraction)
+    score = (score - offset) / (1 - offset)
+
+    return score
+
+
+############################################################################################################################################
+##### FUNCTIONS TO DETERMINE THE CUBES SURROUNDING A CUBE (i.e., within a radius of 3.5)
+############################################################################################################################################
+
+@njit(cache=True)
+def get_distance_between_vectors(target_vector, vector_list):
+    '''
+    Function calculating Euclidean distance between a vector and a list of vectors.
+
+    Args:
+        target_vector: single vector
+        vector_list: array of vectors
+    Returns:
+        list of floats containing the distance between the single vector and each vector in the list.
+    '''
+    return np.sqrt(np.sum((target_vector - vector_list) ** 2, axis=1))
+
+
+@njit(cache=True)
+def get_surrounding_cubes(target_cube_position, all_cube_positions):
+    '''
+    Function determining all surrounding cubes (within a radius of 3.5) and neighbouring cubes of a target cube.
+
+    Neighbouring means connected by face.
+
+    Args:
+        target_cube_position: position vector of the target cube whose surrounding is to be determined.
+        all_cube_positions: array containing all cube positions.
+    Returns:
+        neighbours: list of IDs of all neighbouring cubes of the target cube.
+        surrounding: list of IDs of all cubes in the surrounding vicinity of the target cube.
+    '''
+    cube_distances = get_distance_between_vectors(target_cube_position, all_cube_positions)
+    neighbours = np.where(cube_distances == 1)[0]
+    surrounding = np.where((cube_distances > 0) * (cube_distances < 3.5))[0]
+    return neighbours, surrounding
+
+
+############################################################################################################################################
+##### FUNCTION TO CHECK CONNECTEDNESS OF CUBES
+############################################################################################################################################
+
+@njit(cache=True)
+def check_connectivity_of_cubes(cube_neighbours, removed_cube_ID):
+    '''
+    Function checking whether an ensemble of cubes is still connected if a single cube is removed.
+    This is done by checking whether the neighbours of the removed cube are still part of the same connected cube ensemble.
+    Moves through the ensemble neighbour by neighbour starting from one of the neighbours of the removed cube.
+
+    Args:
+        cube_neighbours: list of cube positions of the ensemble
+        removed_cube_ID: ID of the removed cube.
+    Results:
+        True if ensemble stays connected, False if removing the cube splits the ensemble into at least two disconnected parts.
+    '''
+    # Get neighbours of the cube to be removed
+    direct_neighbours = cube_neighbours[removed_cube_ID]
+    num_neighbours = len(direct_neighbours)
+    # If only one neighbour: stays connected (the cube will stay connected to its neighbour when pivoting)
+    if num_neighbours == 1:
+        return True
+
+    # Start queueing through the ensemble neighbour by neighbour, starting from one of the neighbours of the removed cube
+    queue = [direct_neighbours[0]]
+    visited_nodes = []
+    # Pointer for the queue
+    pointer = 0
+    # Encountered neighbours of the cube to be removed while traversing through the ensemble (or connectivity graph of the ensemble)
+    # We start from one of its neighbours, so we initialize it to 1
+    neighbours_found = 1
+    while len(queue) > pointer:
+        # Do not visit the cube that is to be removed during traversal
+        if queue[pointer] == removed_cube_ID:
+            pointer += 1
+            continue
+
+        # Cube visited
+        visited_nodes.append(queue[pointer])
+
+        # Add neighbours of visited cube to the queue
+        new_cubes = cube_neighbours[queue[pointer]]
+        # Exclude previously visited cubes
+        not_visited_yet = np.array([x not in queue for x in new_cubes])
+        new_cubes = new_cubes[not_visited_yet]
+        queue += list(new_cubes)
+
+        # Check if any of the cubes entering the queue are neighbours of the
+        # cube we want to remove
+        for ids in new_cubes:
+            if ids in direct_neighbours:
+                neighbours_found += 1
+
+        # If we have encountered all neighbours of the cube to be removed,
+        # then the cube ensemble is still fully connected
+        if num_neighbours == neighbours_found:
+            return True
+
+        pointer += 1
+
+    # If we end up here, at least on of the neighbours was not visited, meaning it
+    # is part of another sub-ensemble -> the cube ensemble got disconnected -> return False
+    return False
+
+
+############################################################################################################################################
+##### FUNCTIONS FOR CHECKING WHETHER A MOVE IS VALID (i.e., the cube does not bump into other cubes while pivoting)
+############################################################################################################################################
+
+@njit(cache=True)
+def scan_surrounding(cube_position, diff_to_env, surrounding_cubes_positions):
+    '''
+    Checks in a 5x5 grid around the cube that we want to move whether another cube is in these locations.
+    The 5x5 grid is in the plane normal to the rotation axis (see CubeMoveSet.py for more details).
+
+    Args:
+        cube_position: position vector of the cube to be moved.
+        diff_to_env: list of vectors used to calculate the coordinates of the 5x5 grid locations (see CubeMoveSet.py).
+        surrounding_cubes_positions: array of positions of the surrounding cubes of the cube to be moved.
+    Returns:
+        List of boolean entries. Entries are True if a cube is present in this location of the 5x5 surrounding grid, False otherwise.
+    '''
+    output = np.full((24), False)
+    for i in range(len(surrounding_cubes_positions)):
+        delta = (np.sum(np.fabs(cube_position + diff_to_env - surrounding_cubes_positions[i]), axis=1) == 0)
+        output = np.logical_or(output, delta)
+    return output
+
+
+@njit(cache=True)
+def check_if_move_is_valid(move_to_use, occupance, move_to_options, move_patterns_occupied, move_patterns_empty):
+    '''
+    Check if move is valid.
+
+    This is done by going through all possible moves for a counter or counter-clockwise pivot maneuver and checking if
+
+    1) the cube would pivot and connect with another cube
+    2) the cube does not collide with other cubes while pivoting.
+
+    This is done by checking the surrounding of the moving cube. Each pivot maneuver is represented by a certain
+    move pattern, i.e., where in its surrounding cubes should be present, and where no cubes should be present (to satisfy 1 and 2).
+
+    Args:
+        move_to_use: Move operation (clockwise / counterclockwise)
+        occupance: binary list indicating where cubes are present in a 5x5 grid around the cube (see CubeMoveSet.py for more details). Calculated by "scan_surrounding".
+        move_to_options: all maneuvers leading to the selected move (all ways a clockwise / counterclockwise rotation can be realized).
+        move_patterns_occuped: for each maneuver, which cubes have to be occupied in the surrounding.
+        move_pattern_empty: for each maneuver, which cubes have to be empty in the surrounding.
+    Returns:
+        If a maneuver fits, True and the ID of the underlying move (used to identify where the cube moves to).
+        If none fit, only returns False and None.
+    '''
+    for i in move_to_options[move_to_use]:
+        if np.all(occupance[move_patterns_occupied[i]]) == False:
+            continue
+        else:
+            if np.all(~occupance[move_patterns_empty[i]]) == True:
+                return True, i
+    return False, None
+
+
+@njit(cache=True)
+def update_ensemble(cube_to_move, surrounding, new_surrounding_cubes):
+    '''
+    Update surroundings of the cubes in the old and new surrounding of the cube that moved (and the cube that moved itself).
+    Done by checking which cubes left and entered the surrounding of the moving cube, and updating only those (rest stays unchanged).
+
+    Function can also be used to update neighbours.
+
+    Args:
+        cube_to_move: the cube that is being moved.
+        surrounding: list containing the IDs of surrounding cubes for every cube.
+        new_surrounding_cubes: new surrounding cubes of the cube that moved (after moving).
+    Returns:
+        Nothing, surrounding is updated in place.
+    '''
+    to_remove = surrounding[cube_to_move][np.array([x not in new_surrounding_cubes for x in surrounding[cube_to_move]])]
+    to_add = new_surrounding_cubes[np.array([x not in surrounding[cube_to_move] for x in new_surrounding_cubes])]
+
+    for cubes in to_remove:
+        surrounding[cubes] = surrounding[cubes][np.nonzero(surrounding[cubes] != cube_to_move)]
+    for cubes in to_add:
+        surrounding[cubes] = np.append(surrounding[cubes], [cube_to_move])
+    surrounding[cube_to_move] = new_surrounding_cubes
