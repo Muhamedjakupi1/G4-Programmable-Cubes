@@ -123,3 +123,145 @@ def count_moves(chromosome):
     end_pos = np.where(chromosome == -1)[0][0]
     # Calculate number of movements (each move consists of cube_id + command)
     return end_pos // 2
+
+def save_experimental_results(results_data, output_dir):
+    """
+    Persist experimental results for subsequent comparative analysis.
+
+    This function serializes optimization results to JSON format, enabling
+    systematic comparison between different algorithmic approaches and
+    statistical analysis of performance metrics.
+
+    Parameters:
+        results_data (dict): Dictionary containing experimental results and metadata
+        output_dir (str): Directory path for result storage
+
+    Returns:
+        str: Path to the saved results file
+    """
+    # Ensure results directory exists
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Generate timestamp for unique file identification
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"random_search_iss_results_{timestamp}.json"
+    filepath = os.path.join(output_dir, filename)
+
+    # Serialize results with proper formatting
+    with open(filepath, 'w') as f:
+        json.dump(results_data, f, indent=2)
+
+    print(f"Experimental results saved to: {filepath}")
+    return filepath
+
+
+def save_solution_visualizations(udp, best_chromosome, output_dir, timestamp):
+    """
+    Generate and save visualization plots of the optimal solution.
+
+    This function creates visual representations of both the achieved configuration
+    and the target configuration, saving them as high-quality images for
+    documentation and analysis purposes.
+
+    Parameters:
+        udp: Programmable cubes UDP instance
+        best_chromosome: Optimal solution representation
+        output_dir (str): Directory path for saving plots
+        timestamp (str): Timestamp for unique file naming
+
+    Returns:
+        dict: Paths to saved visualization files
+    """
+    # Ensure results directory exists
+    os.makedirs(output_dir, exist_ok=True)
+
+    saved_plots = {}
+
+    try:
+        # Evaluate optimal solution to configure UDP state
+        udp.fitness(best_chromosome)
+
+        # Save ensemble (achieved) configuration
+        print("  • Generating and saving ensemble configuration visualization...")
+        plt.figure(figsize=(12, 8))
+        udp.plot('ensemble')
+        ensemble_path = os.path.join(output_dir, f"random_search_iss_ensemble_{timestamp}.png")
+        plt.savefig(ensemble_path, dpi=300, bbox_inches='tight', facecolor='white')
+        plt.close()
+        saved_plots['ensemble'] = ensemble_path
+        print(f"    Ensemble plot saved: {ensemble_path}")
+
+        # Save target configuration
+        print("  • Generating and saving target configuration visualization...")
+        plt.figure(figsize=(12, 8))
+        udp.plot('target')
+        target_path = os.path.join(output_dir, f"random_search_iss_target_{timestamp}.png")
+        plt.savefig(target_path, dpi=300, bbox_inches='tight', facecolor='white')
+        plt.close()
+        saved_plots['target'] = target_path
+        print(f"    Target plot saved: {target_path}")
+
+        # Generate convergence plot
+        print("  • Generating and saving convergence analysis...")
+
+    except Exception as e:
+        print(f"  • Visualization error: {e}")
+        print("  • Note: Some visualizations may require specific dependencies")
+
+    return saved_plots
+
+
+def save_convergence_plot(fitness_history, best_fitness_evolution, output_dir, timestamp):
+    """
+    Generate and save convergence analysis plot.
+
+    This function creates a visualization showing the optimization progress
+    over iterations, including both the fitness history and best fitness evolution.
+
+    Parameters:
+        fitness_history (list): List of fitness values for each iteration
+        best_fitness_evolution (list): List of best fitness values over iterations
+        output_dir (str): Directory path for saving plots
+        timestamp (str): Timestamp for unique file naming
+
+    Returns:
+        str: Path to saved convergence plot
+    """
+    try:
+        plt.figure(figsize=(14, 6))
+
+        # Create subplot for fitness history
+        plt.subplot(1, 2, 1)
+        plt.plot(fitness_history, alpha=0.6, color='lightblue', label='Individual Evaluations')
+        plt.plot(best_fitness_evolution, color='darkblue', linewidth=2, label='Best Fitness Evolution')
+        plt.xlabel('Iteration')
+        plt.ylabel('Fitness Value')
+        plt.title('Random Search Convergence Analysis')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+
+        # Create subplot for fitness distribution
+        plt.subplot(1, 2, 2)
+        plt.hist(fitness_history, bins=50, alpha=0.7, color='skyblue', edgecolor='black')
+        plt.axvline(np.mean(fitness_history), color='red', linestyle='--',
+                    label=f'Mean: {np.mean(fitness_history):.6f}')
+        plt.axvline(np.max(fitness_history), color='green', linestyle='--',
+                    label=f'Best: {np.max(fitness_history):.6f}')
+        plt.xlabel('Fitness Value')
+        plt.ylabel('Frequency')
+        plt.title('Fitness Distribution Analysis')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+
+        plt.tight_layout()
+
+        convergence_path = os.path.join(output_dir, f"random_search_iss_convergence_{timestamp}.png")
+        plt.savefig(convergence_path, dpi=300, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        print(f"    Convergence plot saved: {convergence_path}")
+        return convergence_path
+
+    except Exception as e:
+        print(f"  • Convergence plot error: {e}")
+        return None
