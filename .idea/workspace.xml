@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2fc38b45-a8c2-49f7-b85c-2c0b5a3a0149" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/solver/baselines/iss/random_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/solver/baselines/iss/random_search.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/programmable_cubes_UDP.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/programmable_cubes_UDP.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
