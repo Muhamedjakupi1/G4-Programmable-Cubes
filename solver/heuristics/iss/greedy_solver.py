@@ -265,3 +265,312 @@ def select_best_move(cube_id, current_positions, target_centroid, udp, recent_mo
 
         selected_idx = np.random.choice(len(top_moves), p=probabilities)
         return top_moves[selected_idx][1]
+
+
+def build_chromosome(udp):
+    """
+    Build a chromosome using a simplified greedy strategy with more randomization.
+
+    Args:
+        udp: UDP instance
+
+    Returns:
+        np.ndarray: Constructed chromosome
+    """
+    # Build chromosome with mixed strategy
+    chromosome = []
+    max_moves = min(MAX_CHROMOSOME_LENGTH, udp.setup['max_cmds'] // 2)
+
+    # Track recent moves for each cube
+    recent_moves = defaultdict(list)
+
+    for move_step in range(max_moves):
+        # Balance between greedy and random selection
+        if np.random.random() < 0.7:  # 70% greedy, 30% random
+            # Greedy cube selection
+            cube_id = select_greedy_cube(udp, recent_moves)
+        else:
+            # Random cube selection
+            cube_id = np.random.randint(0, udp.setup['num_cubes'])
+
+        if cube_id == -1:
+            break  # No suitable cube found
+
+        # Select move with similar balance
+        if np.random.random() < 0.7:  # 70% greedy, 30% random
+            move_command = select_greedy_move(cube_id, udp, recent_moves)
+        else:
+            move_command = np.random.randint(0, 6)
+
+        if move_command == -1:
+            break  # No good move found
+
+        # Add to chromosome
+        chromosome.extend([cube_id, move_command])
+
+        # Update recent moves tracking
+        recent_moves[cube_id].append(move_command)
+        if len(recent_moves[cube_id]) > RECENT_MOVES_MEMORY:
+            recent_moves[cube_id].pop(0)
+
+    # End chromosome with -1
+    chromosome.append(-1)
+
+    return np.array(chromosome)
+
+
+def select_greedy_cube(udp, recent_moves):
+    """
+    Select a cube using a simplified greedy strategy.
+
+    Args:
+        udp: UDP instance
+        recent_moves: Dictionary tracking recent moves
+
+    Returns:
+        int: Selected cube ID
+    """
+    num_cubes = udp.setup['num_cubes']
+
+    # Simple strategy: select cubes that haven't been moved recently
+    eligible_cubes = []
+    for cube_id in range(num_cubes):
+        if len(recent_moves[cube_id]) < RECENT_MOVES_MEMORY:
+            eligible_cubes.append(cube_id)
+
+    if not eligible_cubes:
+        eligible_cubes = list(range(num_cubes))
+
+    # Random selection from eligible cubes
+    return np.random.choice(eligible_cubes)
+
+
+def select_greedy_move(cube_id, udp, recent_moves):
+    """
+    Select a move using a simplified greedy strategy.
+
+    Args:
+        cube_id: ID of the cube to move
+        udp: UDP instance
+        recent_moves: Dictionary tracking recent moves
+
+    Returns:
+        int: Selected move command
+    """
+    # Simple strategy: avoid recent moves, otherwise random
+    available_moves = []
+    for move_cmd in range(6):
+        if move_cmd not in recent_moves[cube_id]:
+            available_moves.append(move_cmd)
+
+    if not available_moves:
+        available_moves = list(range(6))
+
+    return np.random.choice(available_moves)
+
+
+def evaluate_chromosome(udp, chromosome):
+    """
+    Evaluate the fitness of a chromosome using the UDP.
+
+    Args:
+        udp: The programmable cubes UDP instance
+        chromosome (np.ndarray): The chromosome to evaluate
+
+    Returns:
+        float: The fitness score (negative value, higher is better)
+    """
+    try:
+        fitness_score = udp.fitness(chromosome)
+        return fitness_score[0]  # UDP returns a list with one element
+    except Exception as e:
+        print(f"Error evaluating chromosome: {e}")
+        return float('-inf')  # Return worst possible fitness
+
+
+def quantify_solution_complexity(chromosome):
+    """
+    Quantify the complexity of a solution in terms of movement operations.
+
+    This function analyzes the solution chromosome to determine the number
+    of discrete movement operations required for ensemble reconfiguration.
+
+    Args:
+        chromosome (np.ndarray): The solution chromosome to analyze
+
+    Returns:
+        int: Number of movement operations (cube-command pairs)
+    """
+    # Locate the sentinel terminator position
+    end_pos = np.where(chromosome == -1)[0][0]
+    # Calculate number of operations (half the length due to cube_id + command pairs)
+    return end_pos // 2
+
+
+def save_experimental_results(best_chromosome, best_fitness, best_moves, execution_time, num_cubes, max_cmds):
+    """
+    Save comprehensive experimental results for academic analysis and comparative studies.
+
+    This function creates structured data files containing detailed experimental
+    outcomes for subsequent statistical analysis and algorithmic comparison.
+
+    Args:
+        best_chromosome: Optimal solution chromosome discovered
+        best_fitness: Achieved fitness score
+        best_moves: Number of movement operations
+        execution_time: Algorithm execution duration
+        num_cubes: Problem instance size (number of cubes)
+        max_cmds: Maximum allowed commands
+    """
+    # Create results directory if it doesn't exist
+    results_path = os.path.join(repo_root, RESULTS_DIR)
+    os.makedirs(results_path, exist_ok=True)
+
+    # Generate timestamp for experimental session
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # Compile comprehensive experimental data
+    experimental_data = {
+        "algorithm": "Greedy Heuristic Optimization",
+        "problem_instance": "ISS Spacecraft Assembly",
+        "experimental_parameters": {
+            "iterations": N_ITERATIONS,
+            "random_seed": RANDOM_SEED,
+            "problem_size": num_cubes,
+            "max_commands": max_cmds,
+            "max_chromosome_length": MAX_CHROMOSOME_LENGTH,
+            "exploration_factor": EXPLORATION_FACTOR,
+            "recent_moves_memory": RECENT_MOVES_MEMORY
+        },
+        "performance_metrics": {
+            "best_fitness": float(best_fitness),
+            "solution_complexity": int(best_moves),
+            "execution_time_seconds": float(execution_time),
+            "convergence_efficiency": float(best_moves / max_cmds) if max_cmds > 0 else 0.0
+        },
+        "solution_data": {
+            "chromosome_length": len(best_chromosome),
+            "chromosome": best_chromosome.tolist() if isinstance(best_chromosome, np.ndarray) else best_chromosome
+        },
+        "metadata": {
+            "timestamp": timestamp,
+            "algorithm_type": "greedy_heuristic",
+            "optimization_objective": "minimize_negative_fitness"
+        }
+    }
+
+    # Save experimental results
+    results_file = os.path.join(results_path, f"greedy_heuristic_results_{timestamp}.json")
+    with open(results_file, 'w') as f:
+        json.dump(experimental_data, f, indent=2)
+
+    print(f"Experimental results saved: {results_file}")
+
+
+def save_solution_visualizations(udp, best_chromosome, output_dir, timestamp):
+    """
+    Generate and save visualizations of the optimization results.
+
+    This function creates plots showing both the achieved ensemble
+    configuration and the target configuration for comparative analysis.
+
+    Args:
+        udp: The programmable cubes UDP instance
+        best_chromosome: The optimal solution chromosome
+        output_dir (str): Directory path for saving plots
+        timestamp (str): Timestamp for unique file naming
+
+    Returns:
+        dict: Dictionary containing paths to saved plots
+    """
+    saved_plots = {}
+
+    try:
+        # Evaluate the best solution to set final cube positions
+        udp.fitness(best_chromosome)
+
+        # Save ensemble (achieved) configuration
+        print("  • Generating and saving ensemble configuration visualization...")
+        plt.figure(figsize=(12, 8))
+        udp.plot('ensemble')
+        ensemble_path = os.path.join(output_dir, f"greedy_iss_ensemble_{timestamp}.png")
+        plt.savefig(ensemble_path, dpi=300, bbox_inches='tight', facecolor='white')
+        plt.close()
+        saved_plots['ensemble'] = ensemble_path
+        print(f"    Ensemble plot saved: {ensemble_path}")
+
+        # Save target configuration
+        print("  • Generating and saving target configuration visualization...")
+        plt.figure(figsize=(12, 8))
+        udp.plot('target')
+        target_path = os.path.join(output_dir, f"greedy_iss_target_{timestamp}.png")
+        plt.savefig(target_path, dpi=300, bbox_inches='tight', facecolor='white')
+        plt.close()
+        saved_plots['target'] = target_path
+        print(f"    Target plot saved: {target_path}")
+
+        # Generate convergence plot
+        print("  • Generating and saving convergence analysis...")
+
+    except Exception as e:
+        print(f"  • Visualization error: {e}")
+        print("  • Note: Some visualizations may require specific dependencies")
+
+    return saved_plots
+
+
+def save_convergence_plot(fitness_history, best_fitness_evolution, output_dir, timestamp):
+    """
+    Generate and save convergence analysis plot.
+
+    This function creates a visualization showing the optimization progress
+    over iterations, including both the fitness history and best fitness evolution.
+
+    Parameters:
+        fitness_history (list): List of fitness values for each iteration
+        best_fitness_evolution (list): List of best fitness values over iterations
+        output_dir (str): Directory path for saving plots
+        timestamp (str): Timestamp for unique file naming
+
+    Returns:
+        str: Path to saved convergence plot
+    """
+    try:
+        plt.figure(figsize=(14, 6))
+
+        # Create subplot for fitness history
+        plt.subplot(1, 2, 1)
+        plt.plot(fitness_history, alpha=0.6, color='lightblue', label='Individual Evaluations')
+        plt.plot(best_fitness_evolution, color='darkblue', linewidth=2, label='Best Fitness Evolution')
+        plt.xlabel('Iteration')
+        plt.ylabel('Fitness Value')
+        plt.title('Greedy Heuristic Convergence Analysis')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+
+        # Create subplot for fitness distribution
+        plt.subplot(1, 2, 2)
+        plt.hist(fitness_history, bins=50, alpha=0.7, color='skyblue', edgecolor='black')
+        plt.axvline(np.mean(fitness_history), color='red', linestyle='--',
+                    label=f'Mean: {np.mean(fitness_history):.6f}')
+        plt.axvline(np.max(fitness_history), color='green', linestyle='--',
+                    label=f'Best: {np.max(fitness_history):.6f}')
+        plt.xlabel('Fitness Value')
+        plt.ylabel('Frequency')
+        plt.title('Fitness Distribution Analysis')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+
+        plt.tight_layout()
+
+        convergence_path = os.path.join(output_dir, f"greedy_iss_convergence_{timestamp}.png")
+        plt.savefig(convergence_path, dpi=300, bbox_inches='tight', facecolor='white')
+        plt.close()
+
+        print(f"    Convergence plot saved: {convergence_path}")
+        return convergence_path
+
+    except Exception as e:
+        print(f"  • Convergence plot error: {e}")
+        return None
+
