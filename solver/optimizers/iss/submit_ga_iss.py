@@ -156,5 +156,9 @@ def main():
     print(f"  • Performance Classification: {performance_classification}")
     print(f"  • Expected Ranking: {expected_ranking}")
 
-    
+    # Validate optimization direction
+    if current_fitness < baseline_fitness:
+        print("  • Optimization Direction: Confirmed correct (algorithm working properly)")
+    else:
+        print("  • Optimization Direction: May require further optimization")
 
