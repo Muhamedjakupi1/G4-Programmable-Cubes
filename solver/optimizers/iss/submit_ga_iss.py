@@ -44,3 +44,26 @@ def create_correct_submission(challenge_id, problem_id, decision_vector, fn_out,
 
     print(f"✅ Correct format submission created: {fn_out}")
     return fn_out
+
+
+def create_fixed_length_decision_vector(chromosome, max_moves):
+    """Convert variable-length chromosome to fixed-length decision vector."""
+    if -1 in chromosome:
+        end_pos = chromosome.index(-1)
+    else:
+        end_pos = len(chromosome)
+
+    actual_moves = end_pos // 2
+    print(f"Original chromosome has {actual_moves} moves, expanding to {max_moves} moves")
+
+    decision_vector = chromosome[:end_pos].copy()
+
+    # Pad with no-op moves
+    moves_to_add = max_moves - actual_moves
+    for _ in range(moves_to_add):
+        decision_vector.extend([-1, 0])
+
+    decision_vector.append(-1)
+    print(f"Final decision vector length: {len(decision_vector)} (should be {max_moves * 2 + 1})")
+
+    return decision_vector
