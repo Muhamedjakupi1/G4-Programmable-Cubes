@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import numpy as np
+import time
 
 repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, repo_root)
@@ -67,3 +68,22 @@ def create_fixed_length_decision_vector(chromosome, max_moves):
     print(f"Final decision vector length: {len(decision_vector)} (should be {max_moves * 2 + 1})")
 
     return decision_vector
+
+
+def main():
+    """Execute genetic algorithm optimization and generate submission file."""
+    print("=" * 80)
+    print("Enhanced Genetic Algorithm Solution Submission for ISS Problem")
+    print("Programmable Cubes Challenge - GECCO 2024 Competition")
+    print("=" * 80)
+    print()
+    print("Algorithm Configuration:")
+    print("  • Optimization Method: Enhanced Genetic Algorithm")
+    print("  • Target Performance: Fitness ≤ -0.991 (championship level)")
+    print("  • Key Improvements: Corrected fitness direction, adaptive mechanisms")
+    print("  • Output Format: Standardized competition submission")
+    print()
+
+    algorithm_start_time = time.time()
+    
+
