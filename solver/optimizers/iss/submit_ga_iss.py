@@ -116,3 +116,45 @@ def main():
     improvement_over_baseline = baseline_fitness - current_fitness
     print(f"  • Improvement over baseline: {improvement_over_baseline:.6f}")
 
+
+ # Determine performance classification
+    if current_fitness <= target_fitness:
+        performance_classification = "CHAMPION"
+        expected_ranking = "1st-3rd place"
+        print(f"  • Status: Championship performance achieved")
+    elif current_fitness < -0.8:
+        progress_percentage = (abs(current_fitness) / 0.991) * 100
+        performance_classification = "ELITE"
+        expected_ranking = "Top 3"
+        print(f"  • Status: Elite performance | Progress: {progress_percentage:.1f}%")
+    elif current_fitness < -0.5:
+        progress_percentage = (abs(current_fitness) / 0.991) * 100
+        performance_classification = "EXCELLENT"
+        expected_ranking = "Top 5"
+        print(f"  • Status: Excellent performance | Progress: {progress_percentage:.1f}%")
+    elif current_fitness < -0.2:
+        progress_percentage = (abs(current_fitness) / 0.991) * 100
+        performance_classification = "VERY_GOOD"
+        expected_ranking = "Top 10"
+        print(f"  • Status: Very good performance | Progress: {progress_percentage:.1f}%")
+    elif current_fitness < 0:
+        progress_percentage = (abs(current_fitness) / 0.991) * 100
+        performance_classification = "COMPETITIVE"
+        expected_ranking = "Top 15"
+        print(f"  • Status: Competitive performance | Progress: {progress_percentage:.1f}%")
+    else:
+        if improvement_over_baseline > 0:
+            improvement_percentage = (improvement_over_baseline / baseline_fitness) * 100
+            performance_classification = "IMPROVED"
+            expected_ranking = "Better than baseline"
+            print(f"  • Status: Improved performance | {improvement_percentage:.1f}% better than baseline")
+        else:
+            performance_classification = "EXPERIMENTAL"
+            expected_ranking = "Experimental"
+            print(f"  • Status: Experimental result")
+
+    print(f"  • Performance Classification: {performance_classification}")
+    print(f"  • Expected Ranking: {expected_ranking}")
+
+    
+
