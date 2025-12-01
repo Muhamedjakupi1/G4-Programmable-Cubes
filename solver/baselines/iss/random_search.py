@@ -36,14 +36,11 @@ from datetime import datetime
 from tqdm import tqdm
 
 # Add the src directory and the repository root to the Python path
-# ... (Lines 38-40 are adding paths, which is good)
 repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
-# ...
 
-from src.programmable_cubes_UDP import programmable_cubes_UDP
-# Modify this line to pass the root directory
+from programmable_cubes_UDP import programmable_cubes_UDP
 
 # Experimental Configuration Parameters
 N_ITERATIONS = 1000  # Number of stochastic sampling iterations
@@ -123,6 +120,7 @@ def count_moves(chromosome):
     end_pos = np.where(chromosome == -1)[0][0]
     # Calculate number of movements (each move consists of cube_id + command)
     return end_pos // 2
+
 
 def save_experimental_results(results_data, output_dir):
     """
@@ -266,6 +264,7 @@ def save_convergence_plot(fitness_history, best_fitness_evolution, output_dir, t
         print(f"  • Convergence plot error: {e}")
         return None
 
+
 def random_search_iss():
     """
     Execute stochastic optimization using random search methodology for the ISS assembly problem.
@@ -295,10 +294,7 @@ def random_search_iss():
 
     # Initialize optimization problem instance
     print("Initializing User Defined Problem (UDP) for ISS configuration...")
-
-    # Get repository root and create UDP with root directory
-    repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
-    udp = programmable_cubes_UDP('ISS', repo_root)
+    udp = programmable_cubes_UDP('ISS')
 
     # Extract problem parameters for algorithm configuration
     num_cubes = udp.setup['num_cubes']
@@ -462,6 +458,7 @@ def random_search_iss():
     print("=" * 80)
 
     return best_chromosome, best_fitness, best_moves, results_data
+
 
 if __name__ == "__main__":
     # Execute stochastic optimization experiment

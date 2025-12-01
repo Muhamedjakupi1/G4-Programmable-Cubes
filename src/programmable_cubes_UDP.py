@@ -1,11 +1,10 @@
 # Programmable Cubes challenge
 # GECCO 2024 Space Optimisation Competition (SpOC)
 
-import os
 from numba import njit
 import numpy as np
 from numba.typed import List
-# from src.CubeMoveset import MoveSetRev // kur te bon ledi fajllin e perdorim
+from src.CubeMoveset import MoveSetRev
 import json
 import matplotlib.pyplot as plt
 
@@ -15,31 +14,26 @@ import matplotlib.pyplot as plt
 ############################################################################################################################################
 
 class programmable_cubes_UDP:
-    def __init__(self, problem, root_dir='.'):
+    def __init__(self, problem):
         """
         A Pygmo compatible UDP User Defined Problem representing the Programmable Cubes challenge for SpOC 2024.
+        https://esa.github.io/pygmo2/tutorials/coding_udp_simple.html explains more details on UDPs.
 
         Args:
             problem: Name of the problem / scenario to be used. Implemented: ISS, JWST, Enterprise.
-            root_dir: Root directory of the project (default: current directory)
         """
         # Variable name used for storing cube ensemble configuration after chromosome evaluation
         self.final_cube_positions = None
 
-        # Store root directory
-        self.root_dir = root_dir
-
         # Load specifications of the problem
-        problem_path = os.path.join(root_dir, 'problems', f'{problem}.json')
-        with open(problem_path, 'r') as infile:
+        with open('problems/{}.json'.format(problem), 'r') as infile:
             self.setup = json.load(infile)
 
         # Load target cube locations and cube types
-        data_path = os.path.join(root_dir, self.setup['path'])
-        self.target_cube_positions = np.load(os.path.join(data_path, 'Target_Config.npy'))
-        self.target_cube_types = np.load(os.path.join(data_path, 'Target_Cube_Types.npy'))
+        self.target_cube_positions = np.load('{}/Target_Config.npy'.format(self.setup['path']))
+        self.target_cube_types = np.load('{}/Target_Cube_Types.npy'.format(self.setup['path']))
         # Load cube types of initial configuration
-        self.initial_cube_types = np.load(os.path.join(data_path, 'Initial_Cube_Types.npy'))
+        self.initial_cube_types = np.load('{}/Initial_Cube_Types.npy'.format(self.setup['path']))
 
     def get_bounds(self):
         """
@@ -103,8 +97,7 @@ class programmable_cubes_UDP:
         # Note: we do not check here whether a custom cube configuration is valid
         # (i.e., whether all cubes are connected with each other).
         if initial_configuration is None:
-            initial_config_path = os.path.join(self.root_dir, self.setup['path'], 'Initial_Config.npy')
-            initial_configuration = np.load(initial_config_path)
+            initial_configuration = np.load('{}/Initial_Config.npy'.format(self.setup['path']))
 
         # Create the cube ensemble with an initial cube configuration.
         cubes = ProgrammableCubes(initial_configuration)
@@ -168,9 +161,9 @@ class programmable_cubes_UDP:
             ax.voxels(cube_tensor[i], facecolor=self.setup['colours'][cube_type_to_plot[i]], edgecolors='k', alpha=.4)
 
         plt.tight_layout()
-        # plt.show()
+        plt.show()
 
-############################################################################################################################################
+    ############################################################################################################################################
 
 
 ##### FITNESS FUNCTION
@@ -397,149 +390,149 @@ def update_ensemble(cube_to_move, surrounding, new_surrounding_cubes):
         surrounding[cubes] = np.append(surrounding[cubes], [cube_to_move])
     surrounding[cube_to_move] = new_surrounding_cubes
 
-    ############################################################################################################################################
-    ##### PUTTING EVERYTHING TOGETHER: A CLASS IMPLEMENTING THE CUBE ENSEMBLE UPDATE LOGIC
-    ############################################################################################################################################
 
-    class ProgrammableCubes:
-        def __init__(self, initial_positions):
-            '''
-            The programmable cube ensemble.
+############################################################################################################################################
+##### PUTTING EVERYTHING TOGETHER: A CLASS IMPLEMENTING THE CUBE ENSEMBLE UPDATE LOGIC
+############################################################################################################################################
 
-            An ensemble is represented by an array containing all cube positions, as well as a list containing
-            the IDs of surrounding cubes of each cube (surrounding cubes are cubes that have a distance less than 3.5).
+class ProgrammableCubes:
+    def __init__(self, initial_positions):
+        '''
+        The programmable cube ensemble.
 
-            Cube IDs are used as indices both for positions and the surroundings list.
+        An ensemble is represented by an array containing all cube positions, as well as a list containing
+        the IDs of surrounding cubes of each cube (surrounding cubes are cubes that have a distance less than 3.5).
 
-            The moveset defines how cubes can reconfigure, i.e., it contains all possible maneuvers for pivoting cubes.
+        Cube IDs are used as indices both for positions and the surroundings list.
 
-            Contains methods to:
-                - reset the ensemble to a new configuration (recalculating the list of surrounding cubes).
-                - check and apply an update step, i.e., pivot a cube.
-                - unroll a chromosome.
-            '''
-            # Properties of the cube ensemble
-            # 1) Positions of the cubes
-            # + derivative quantities of the cube positions, pre-calculated and only updated locally
-            # to speed up calculations
-            # 2) The surrounding of each cube, i.e., the IDs of the cubes within a radius of 3.5 of the cube
-            # 3) The neighbours of each cube, i.e., the IDs of the cubes with a distance of exactly 1 (connected to the cube by face)
-            self.cube_position = None
-            self.cube_surroundings = None
-            self.cube_neighbours = None
-            # formal description of the physically possible pivoting maneuvers a cube can do
-            self.moveset = MoveSetRev()
-            # Set up the cube ensemble with initial cube positions
-            # reset populates cube_surroundings and cube_neighbours automatically
-            self.reset(initial_positions)
+        The moveset defines how cubes can reconfigure, i.e., it contains all possible maneuvers for pivoting cubes.
 
-        def reset(self, positions):
-            '''
-            Reset the cube ensemble to a new configuration.
+        Contains methods to:
+            - reset the ensemble to a new configuration (recalculating the list of surrounding cubes).
+            - check and apply an update step, i.e., pivot a cube.
+            - unroll a chromosome.
+        '''
+        # Properties of the cube ensemble
+        # 1) Positions of the cubes
+        # + derivative quantities of the cube positions, pre-calculated and only updated locally
+        # to speed up calculations
+        # 2) The surrounding of each cube, i.e., the IDs of the cubes within a radius of 3.5 of the cube
+        # 3) The neighbours of each cube, i.e., the IDs of the cubes with a distance of exactly 1 (connected to the cube by face)
+        self.cube_position = None
+        self.cube_surroundings = None
+        self.cube_neighbours = None
+        # formal description of the physically possible pivoting maneuvers a cube can do
+        self.moveset = MoveSetRev()
+        # Set up the cube ensemble with initial cube positions
+        # reset populates cube_surroundings and cube_neighbours automatically
+        self.reset(initial_positions)
 
-            Args:
-                positions: cube positions to reset the ensemble to.
-            Returns:
-                Changes cube_position and cube_surroundings in place.
-            '''
-            self.cube_position = np.array(positions)
-            self.cube_surroundings = List()
-            self.cube_neighbours = List()
-            # Populate surroundings and neighbours for each cube
-            for i in range(len(self.cube_position)):
-                neighs, surrs = get_surrounding_cubes(self.cube_position[i], self.cube_position)
-                self.cube_surroundings.append(surrs)
-                self.cube_neighbours.append(neighs)
+    def reset(self, positions):
+        '''
+        Reset the cube ensemble to a new configuration.
 
-        def apply_single_update_step(self, cube_to_move, move_to_use, step='', verbose=False):
-            '''
-            Function applying a single update to the cube ensemble.
+        Args:
+            positions: cube positions to reset the ensemble to.
+        Returns:
+            Changes cube_position and cube_surroundings in place.
+        '''
+        self.cube_position = np.array(positions)
+        self.cube_surroundings = List()
+        self.cube_neighbours = List()
+        # Populate surroundings and neighbours for each cube
+        for i in range(len(self.cube_position)):
+            neighs, surrs = get_surrounding_cubes(self.cube_position[i], self.cube_position)
+            self.cube_surroundings.append(surrs)
+            self.cube_neighbours.append(neighs)
 
-            For a move to be legal, two conditions have to be met:
+    def apply_single_update_step(self, cube_to_move, move_to_use, step='', verbose=False):
+        '''
+        Function applying a single update to the cube ensemble.
 
-            1) removing the selected cube from the ensemble does not disconnect it, i.e., split it into at least two disconnected components.
-            2) The cube can perform the pivoting maneuver without detaching or colliding with other cubes.
+        For a move to be legal, two conditions have to be met:
 
-            Args:
-                cube_to_move: ID of the cube that is to be moved.
-                move_to_use: move to be used (0 - 5, indicating clock/counterclockwise rotation around x,z,y axis)
-                verbose: if True, additional information is printed.
-            Returns:
-                1 if the move was legal and applied, 0 if the move was illegal and ignored.
-            '''
-            # Extract rotation axis and rotation direction
-            rot_axis = int(move_to_use / 2)
-            rot_dir = move_to_use % 2
+        1) removing the selected cube from the ensemble does not disconnect it, i.e., split it into at least two disconnected components.
+        2) The cube can perform the pivoting maneuver without detaching or colliding with other cubes.
 
-            ## CHECK CONDITION 1
-            # check if ensemble stays fully connected if the cube is removed
-            # (best case, this only iterates over a few cubes -> fast; worst case, this iterates over the whole ensemble -> slower)
-            not_connecting_cube = check_connectivity_of_cubes(self.cube_neighbours, cube_to_move)
+        Args:
+            cube_to_move: ID of the cube that is to be moved.
+            move_to_use: move to be used (0 - 5, indicating clock/counterclockwise rotation around x,z,y axis)
+            verbose: if True, additional information is printed.
+        Returns:
+            1 if the move was legal and applied, 0 if the move was illegal and ignored.
+        '''
+        # Extract rotation axis and rotation direction
+        rot_axis = int(move_to_use / 2)
+        rot_dir = move_to_use % 2
 
-            if not_connecting_cube == True:
-                # Removing the cube does not split the ensemble into two! Lets goooo.
-                ## CHECK CONDITION 2
-                surrounding_cube_positions = self.cube_position[self.cube_surroundings[cube_to_move]]
-                occupance = scan_surrounding(self.cube_position[cube_to_move],
-                                             self.moveset.diffs_to_surrounding[rot_axis],
-                                             surrounding_cube_positions)
-                move_legal, which = check_if_move_is_valid(rot_dir, occupance, self.moveset.move_pattern_mapping,
-                                                           self.moveset.move_patterns_occupied,
-                                                           self.moveset.move_patterns_empty)
-                if move_legal == True:
-                    # The move is legal! I am so exciting, and I just can't hide it!
-                    ## UPDATE THE ENSEMBLE
-                    # Update position
-                    self.cube_position[cube_to_move] += self.moveset.displacements[
-                        rot_axis * self.moveset.number_moves + which]
-                    # find new surroundings of cube
-                    new_neighbouring_cubes, new_surrounding_cubes = get_surrounding_cubes(
-                        self.cube_position[cube_to_move],
-                        self.cube_position)
+        ## CHECK CONDITION 1
+        # check if ensemble stays fully connected if the cube is removed
+        # (best case, this only iterates over a few cubes -> fast; worst case, this iterates over the whole ensemble -> slower)
+        not_connecting_cube = check_connectivity_of_cubes(self.cube_neighbours, cube_to_move)
 
-                    # Update surroundings and neighbours
-                    update_ensemble(cube_to_move, self.cube_surroundings, new_surrounding_cubes)
-                    update_ensemble(cube_to_move, self.cube_neighbours, new_neighbouring_cubes)
+        if not_connecting_cube == True:
+            # Removing the cube does not split the ensemble into two! Lets goooo.
+            ## CHECK CONDITION 2
+            surrounding_cube_positions = self.cube_position[self.cube_surroundings[cube_to_move]]
+            occupance = scan_surrounding(self.cube_position[cube_to_move],
+                                         self.moveset.diffs_to_surrounding[rot_axis],
+                                         surrounding_cube_positions)
+            move_legal, which = check_if_move_is_valid(rot_dir, occupance, self.moveset.move_pattern_mapping,
+                                                       self.moveset.move_patterns_occupied,
+                                                       self.moveset.move_patterns_empty)
+            if move_legal == True:
+                # The move is legal! I am so exciting, and I just can't hide it!
+                ## UPDATE THE ENSEMBLE
+                # Update position
+                self.cube_position[cube_to_move] += self.moveset.displacements[
+                    rot_axis * self.moveset.number_moves + which]
+                # find new surroundings of cube
+                new_neighbouring_cubes, new_surrounding_cubes = get_surrounding_cubes(self.cube_position[cube_to_move],
+                                                                                      self.cube_position)
 
-                    # Everything worked!
-                    return 1
-                else:
-                    # Oh no...
-                    if verbose == True:
-                        print(
-                            '{} -- Cannot apply move {} to cube {}. Cube would crash into neighbouring cubes. Skipping command...'.format(
-                                step, move_to_use, cube_to_move))
-                    return 0
+                # Update surroundings and neighbours
+                update_ensemble(cube_to_move, self.cube_surroundings, new_surrounding_cubes)
+                update_ensemble(cube_to_move, self.cube_neighbours, new_neighbouring_cubes)
+
+                # Everything worked!
+                return 1
             else:
                 # Oh no...
                 if verbose == True:
-                    print('{} -- Cannot apply move {} to cube {}. Cube is connecting. Skipping command...'.format(step,
-                                                                                                                  move_to_use,
-                                                                                                                  cube_to_move))
+                    print(
+                        '{} -- Cannot apply move {} to cube {}. Cube would crash into neighbouring cubes. Skipping command...'.format(
+                            step, move_to_use, cube_to_move))
                 return 0
+        else:
+            # Oh no...
+            if verbose == True:
+                print('{} -- Cannot apply move {} to cube {}. Cube is connecting. Skipping command...'.format(step,
+                                                                                                              move_to_use,
+                                                                                                              cube_to_move))
+            return 0
 
-        def apply_chromosome(self, chromosome, verbose):
-            '''
-            Given a chromosome, execute the command sequence encoded in it until
-            a maximum number of steps is reached, or the chromosome ends / terminates early.
+    def apply_chromosome(self, chromosome, verbose):
+        '''
+        Given a chromosome, execute the command sequence encoded in it until
+        a maximum number of steps is reached, or the chromosome ends / terminates early.
 
-            Chromosome evaluating ends when the first cube ID of "-1" is encountered in the chromosome.
+        Chromosome evaluating ends when the first cube ID of "-1" is encountered in the chromosome.
 
-            Args:
-                chromosome: The chromosome to apply.
-                verbose: Whether to print additional information while applying the chromosome.
-            Returns:
-                chrom_end: the number of commands issued to reach the final configuration.
-            '''
-            # Find end point of the chromosome
-            chrom_end = int(np.where(chromosome == -1)[0][0] / 2)
+        Args:
+            chromosome: The chromosome to apply.
+            verbose: Whether to print additional information while applying the chromosome.
+        Returns:
+            chrom_end: the number of commands issued to reach the final configuration.
+        '''
+        # Find end point of the chromosome
+        chrom_end = int(np.where(chromosome == -1)[0][0] / 2)
 
-            # Lets roll!
-            for i in range(chrom_end):
-                cube_to_move = int(chromosome[2 * i])
-                move_command = int(chromosome[2 * i + 1])
-                # Every move command counts, so clean up illegal moves (those that do not change the ensemble)
-                self.apply_single_update_step(cube_to_move, move_command, step=i, verbose=verbose)
-            return chrom_end
+        # Lets roll!
+        for i in range(chrom_end):
+            cube_to_move = int(chromosome[2 * i])
+            move_command = int(chromosome[2 * i + 1])
+            # Every move command counts, so clean up illegal moves (those that do not change the ensemble)
+            self.apply_single_update_step(cube_to_move, move_command, step=i, verbose=verbose)
+        return chrom_end
 
-    ############################################################################################################################################
+############################################################################################################################################
