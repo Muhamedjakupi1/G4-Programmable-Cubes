@@ -50,7 +50,7 @@ repo_root = os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
 
-from programmable_cubes_UDP import programmable_cubes_UDP
+from src.programmable_cubes_UDP import programmable_cubes_UDP
 
 # Research Configuration Parameters
 N_ITERATIONS = 500  # Number of greedy construction iterations for statistical sampling
@@ -574,3 +574,148 @@ def save_convergence_plot(fitness_history, best_fitness_evolution, output_dir, t
         print(f"  • Convergence plot error: {e}")
         return None
 
+
+def greedy_heuristic_optimization_iss():
+    """
+    Main greedy heuristic optimization algorithm for the ISS spacecraft assembly problem.
+
+    This function implements an advanced greedy construction methodology combined with
+    probabilistic exploration for the International Space Station modular assembly
+    optimization problem. The algorithm employs intelligent cube selection strategies
+    and movement operation optimization to achieve superior performance compared to
+    baseline stochastic approaches.
+
+    Returns:
+        tuple: (best_chromosome, best_fitness, best_moves, fitness_history)
+    """
+    print("=" * 80)
+    print("GREEDY HEURISTIC OPTIMIZATION FOR ISS SPACECRAFT ASSEMBLY")
+    print("Academic Implementation - GECCO 2024 Space Optimization Competition")
+    print("=" * 80)
+
+    # Initialize stochastic environment for reproducible experiments
+    if RANDOM_SEED is not None:
+        random.seed(RANDOM_SEED)
+        np.random.seed(RANDOM_SEED)
+        print(f"Deterministic mode enabled with seed: {RANDOM_SEED}")
+    else:
+        print("Stochastic exploration mode enabled (non-deterministic)")
+
+    # Initialize User Defined Problem for ISS configuration
+    print("Initializing UDP for ISS spacecraft assembly problem...")
+    udp = programmable_cubes_UDP('ISS')
+
+    # Extract problem instance parameters
+    num_cubes = udp.setup['num_cubes']
+    max_cmds = udp.setup['max_cmds']
+
+    print(f"Problem Instance Characteristics:")
+    print(f"  • Number of programmable cubes: {num_cubes}")
+    print(f"  • Maximum command sequence length: {max_cmds}")
+    print(f"  • Greedy construction iterations: {N_ITERATIONS}")
+    print(f"  • Maximum chromosome length: {MAX_CHROMOSOME_LENGTH}")
+    print(f"  • Exploration factor: {EXPLORATION_FACTOR}")
+    print(f"  • Recent moves memory: {RECENT_MOVES_MEMORY}")
+    print()
+
+    # Initialize optimization tracking variables
+    best_fitness = float('inf')
+    best_chromosome = None
+    best_moves = 0
+    fitness_history = []
+    iteration_best_fitness = []
+
+    import time
+    start_time = time.time()
+
+    print("Commencing greedy heuristic optimization process...")
+    print()
+
+    # Main optimization loop with greedy heuristic construction
+    for iteration in tqdm(range(N_ITERATIONS), desc="Greedy Heuristic Progress"):
+        # Construct solution using greedy heuristic strategy
+        chromosome = build_chromosome(udp)
+
+        # Evaluate solution quality using fitness function
+        fitness = evaluate_chromosome(udp, chromosome)
+        fitness_history.append(fitness)
+
+        # Update optimal solution if improvement discovered
+        if fitness < best_fitness:
+            best_fitness = fitness
+            best_chromosome = chromosome.copy()
+            best_moves = quantify_solution_complexity(chromosome)
+
+            if (iteration + 1) % LOG_INTERVAL == 0:
+                print(f"Iteration {iteration + 1:3d}: Enhanced fitness = {best_fitness:.6f} (operations: {best_moves})")
+
+        # Track best fitness evolution
+        iteration_best_fitness.append(best_fitness)
+
+        # Periodic progress reporting
+        if (iteration + 1) % LOG_INTERVAL == 0 and fitness <= best_fitness:
+            print(
+                f"Iteration {iteration + 1:3d}: Current optimal fitness = {best_fitness:.6f} (operations: {best_moves})")
+
+    execution_time = time.time() - start_time
+
+    print()
+    print("=" * 80)
+    print("EXPERIMENTAL RESULTS AND PERFORMANCE ANALYSIS")
+    print("=" * 80)
+
+    # Comprehensive results analysis
+    print(f"Optimal fitness achieved: {best_fitness:.6f}")
+    print(f"Solution complexity (operations): {best_moves}")
+    print(f"Chromosome encoding length: {len(best_chromosome)}")
+    print(f"Algorithm execution time: {execution_time:.2f} seconds")
+
+    # Calculate efficiency metrics
+    efficiency = (1 - best_moves / max_cmds) * 100 if max_cmds > 0 else 0
+    print(f"Operational efficiency: {efficiency:.1f}% ({best_moves}/{max_cmds} operations utilized)")
+
+    # Compare with baseline performance
+    baseline_fitness = 0.043  # Random search baseline reference
+    if baseline_fitness > 0:
+        improvement = ((best_fitness - baseline_fitness) / baseline_fitness) * 100
+        print(f"Performance enhancement over baseline: {improvement:.1f}%")
+    else:
+        print(f"Baseline fitness: {baseline_fitness:.6f}, Achieved fitness: {best_fitness:.6f}")
+
+    print()
+    print("Optimal chromosome encoding (first 20 elements):")
+    print(best_chromosome[:20], "..." if len(best_chromosome) > 20 else "")
+
+    # Generate academic visualizations and save results
+    print()
+    print("Generating scientific visualizations and experimental data...")
+
+    # Save comprehensive experimental results
+    save_experimental_results(best_chromosome, best_fitness, best_moves,
+                              execution_time, num_cubes, max_cmds)
+
+    # Generate solution visualizations and convergence plots
+    try:
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        results_path = os.path.join(repo_root, RESULTS_DIR)
+
+        # Save configuration plots
+        saved_plots = save_solution_visualizations(udp, best_chromosome, results_path, timestamp)
+
+        # Save convergence analysis
+        convergence_path = save_convergence_plot(fitness_history, iteration_best_fitness, results_path, timestamp)
+
+    except Exception as e:
+        print(f"Visualization generation error: {e}")
+        print("Note: Visualization functionality may require display environment")
+
+    print()
+    print("Greedy heuristic optimization analysis completed successfully!")
+    print("Experimental data and visualizations saved for comparative research")
+
+    return best_chromosome, best_fitness, best_moves, fitness_history
+
+
+if __name__ == "__main__":
+    # Execute the greedy heuristic optimization analysis
+    best_chromosome, best_fitness, best_moves, fitness_history = greedy_heuristic_optimization_iss()
