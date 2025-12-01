@@ -189,4 +189,22 @@ def main():
         f"Improvement over baseline: {improvement_over_baseline:.6f}. "
         f"Expected ranking: {expected_ranking}."
     )
+    
+    # Create properly formatted submission
+    create_correct_submission(
+        challenge_id=challenge_id,
+        problem_id=problem_id,
+        decision_vector=decision_vector,
+        fn_out=output_file,
+        name=submission_name,
+        description=submission_description
+    )
+
+    print()
+    print("Submission File Details:")
+    print(f"  • File path: {output_file}")
+    print(f"  • Challenge ID: {challenge_id}")
+    print(f"  • Problem ID: {problem_id}")
+    print(f"  • Decision vector length: {len(decision_vector)}")
+    print(f"  • Preview: {decision_vector[:10]}...")
 
