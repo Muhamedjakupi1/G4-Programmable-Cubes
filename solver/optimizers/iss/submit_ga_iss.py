@@ -162,3 +162,31 @@ def main():
     else:
         print("  • Optimization Direction: May require further optimization")
 
+        # Convert chromosome to standard decision vector format
+    print()
+    print("Converting solution to competition format...")
+    decision_vector = create_fixed_length_decision_vector(best_chromosome, 6000)
+
+    # Generate submission file with correct format
+    print("Creating standardized submission file...")
+
+    challenge_id = "spoc-3-programmable-cubes"
+    problem_id = "iss"
+
+    output_file = os.path.join(repo_root, "genetic_algorithm_iss_submission.json")
+
+    submission_name = f"Enhanced GA - ISS v4.0"
+
+    submission_description = (
+        f"Enhanced Genetic Algorithm for ISS spacecraft assembly problem. "
+        f"Algorithm improvements: (1) Corrected fitness direction optimization for negative values, "
+        f"(2) Properly configured selection, elitism, and crossover operators, "
+        f"(3) Inverse-move cleanup for solution efficiency, "
+        f"(4) Adaptive mutation rate adjustment for stagnation prevention. "
+        f"Configuration: Population=100, Generations=250, comprehensive optimization strategy. "
+        f"Performance: {current_fitness:.6f} fitness with {best_moves} moves. "
+        f"Classification: {performance_classification}. "
+        f"Improvement over baseline: {improvement_over_baseline:.6f}. "
+        f"Expected ranking: {expected_ranking}."
+    )
+
