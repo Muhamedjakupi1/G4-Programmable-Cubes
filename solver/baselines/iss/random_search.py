@@ -40,7 +40,7 @@ repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
 
-from programmable_cubes_UDP import programmable_cubes_UDP
+from src.programmable_cubes_UDP import programmable_cubes_UDP
 
 # Experimental Configuration Parameters
 N_ITERATIONS = 1000  # Number of stochastic sampling iterations

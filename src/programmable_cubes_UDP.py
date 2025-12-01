@@ -4,7 +4,7 @@
 from numba import njit
 import numpy as np
 from numba.typed import List
-from src.CubeMoveset import MoveSetRev
+# from src.CubeMoveset import MoveSetRev //ledi e bon push
 import json
 import matplotlib.pyplot as plt
 
