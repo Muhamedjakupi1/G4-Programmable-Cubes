@@ -587,4 +587,287 @@ def _crossover(parent1, parent2, udp):
         
     except Exception:
         return parent1.copy(), parent2.copy()
+    
+    def repair_chromosome(chromosome_seq, udp):
+    """Enhanced chromosome repair with inverse-move cleanup."""
+    if not chromosome_seq:
+        return generate_random_chromosome(udp.setup['num_cubes'], MAX_CHROMOSOME_LENGTH)
+    
+    # Ensure even length
+    if len(chromosome_seq) % 2 != 0:
+        chromosome_seq = chromosome_seq[:-1]
+    
+    # Apply inverse-move cleanup
+    if random.random() < CLEANUP_RATE:
+        chromosome_seq = remove_inverse_moves(chromosome_seq)
+    
+    # Ensure reasonable length
+    if len(chromosome_seq) < MIN_CHROMOSOME_LENGTH * 2:
+        num_cubes = udp.setup['num_cubes']
+        recent_moves = defaultdict(list)
+        
+        while len(chromosome_seq) < MIN_CHROMOSOME_LENGTH * 2:
+            cube_id = intelligent_cube_selection(udp, recent_moves)
+            move_cmd = intelligent_move_selection(cube_id, recent_moves)
+            chromosome_seq.extend([cube_id, move_cmd])
+            
+            recent_moves[cube_id].append(move_cmd)
+            if len(recent_moves[cube_id]) > 8:
+                recent_moves[cube_id].pop(0)
+    
+    if len(chromosome_seq) > MAX_CHROMOSOME_LENGTH * 2:
+        chromosome_seq = chromosome_seq[:MAX_CHROMOSOME_LENGTH * 2]
+    
+    # Validate values
+    num_cubes = udp.setup['num_cubes']
+    for i in range(0, len(chromosome_seq), 2):
+        if i + 1 < len(chromosome_seq):
+            if chromosome_seq[i] < 0 or chromosome_seq[i] >= num_cubes:
+                chromosome_seq[i] = random.randint(0, num_cubes - 1)
+            if chromosome_seq[i + 1] < 0 or chromosome_seq[i + 1] > 5:
+                chromosome_seq[i + 1] = random.randint(0, 5)
+    
+    result = chromosome_seq.copy()
+    result.append(-1)
+    return result
+
+
+def adaptive_mutation(individual, udp, mutation_rate):
+    """Mutation with adaptive rate based on stagnation."""
+    if random.random() > mutation_rate:
+        return individual
+    
+    mutated = individual.copy()
+    chromosome = mutated.chromosome.copy()
+    
+    try:
+        end_pos = chromosome.index(-1) if -1 in chromosome else len(chromosome)
+        move_seq = chromosome[:end_pos]
+    except (ValueError, AttributeError):
+        move_seq = generate_random_chromosome(udp.setup['num_cubes'], MAX_CHROMOSOME_LENGTH)[:-1]
+    
+    if len(move_seq) < MIN_CHROMOSOME_LENGTH * 2:
+        move_seq = generate_random_chromosome(udp.setup['num_cubes'], MAX_CHROMOSOME_LENGTH)[:-1]
+    
+    # Number of mutations based on current mutation rate
+    num_mutations = max(1, int(len(move_seq) * mutation_rate / 20))
+    
+    for _ in range(num_mutations):
+        mutation_type = random.random()
+        
+        if mutation_type < 0.4 and len(move_seq) < MAX_CHROMOSOME_LENGTH * 2:
+            # Insert mutation
+            try:
+                insert_pos = random.randrange(0, len(move_seq) + 1, 2)
+                new_move = [random.randint(0, udp.setup['num_cubes'] - 1), random.randint(0, 5)]
+                move_seq = move_seq[:insert_pos] + new_move + move_seq[insert_pos:]
+            except ValueError:
+                new_move = [random.randint(0, udp.setup['num_cubes'] - 1), random.randint(0, 5)]
+                move_seq.extend(new_move)
+        
+        elif mutation_type < 0.7 and len(move_seq) > MIN_CHROMOSOME_LENGTH * 2:
+            # Delete mutation
+            try:
+                delete_pos = random.randrange(0, len(move_seq), 2)
+                if delete_pos + 1 < len(move_seq):
+                    move_seq = move_seq[:delete_pos] + move_seq[delete_pos + 2:]
+            except ValueError:
+                pass
+        
+        else:
+            # Modify mutation
+            if len(move_seq) >= 2:
+                try:
+                    modify_pos = random.randrange(0, len(move_seq), 2)
+                    if modify_pos + 1 < len(move_seq):
+                        if random.random() < 0.5:
+                            move_seq[modify_pos] = random.randint(0, udp.setup['num_cubes'] - 1)
+                        else:
+                            move_seq[modify_pos + 1] = random.randint(0, 5)
+                except ValueError:
+                    pass
+    
+    # Repair and update
+    mutated.chromosome = repair_chromosome(move_seq, udp)
+    mutated.is_evaluated = False
+    return mutated
+
+
+def local_search(individual, udp, iterations=LOCAL_SEARCH_ITERATIONS):
+    """Local search for fine-tuning solutions."""
+    if random.random() > LOCAL_SEARCH_RATE:
+        return individual
+    
+    best = individual.copy()
+    current = individual.copy()
+    
+    for _ in range(iterations):
+        # Small modifications
+        candidate = current.copy()
+        
+        if len(candidate.chromosome) > 3:
+            try:
+                end_pos = candidate.chromosome.index(-1)
+                if end_pos >= 4:
+                    pos = random.randrange(0, end_pos - 1, 2)
+                    if random.random() < 0.5:
+                        candidate.chromosome[pos] = random.randint(0, udp.setup['num_cubes'] - 1)
+                    else:
+                        candidate.chromosome[pos + 1] = random.randint(0, 5)
+                    
+                    candidate.is_evaluated = False
+                    evaluate_individual(candidate, udp)
+                    
+                    # : Better means smaller fitness
+                    if candidate.fitness < current.fitness:
+                        current = candidate.copy()
+                        if current.fitness < best.fitness:
+                            best = current.copy()
+            except (ValueError, IndexError):
+                continue
+    
+    return best
+
+
+def genetic_algorithm_iss():
+    """
+    Execute Enhanced Genetic Algorithm for ISS Spacecraft Assembly Optimization.
+    
+    Implements a comprehensive genetic algorithm optimization with multi-strategy
+    population initialization, adaptive mutation mechanisms, elite preservation,
+    and systematic performance monitoring. The algorithm generates comprehensive
+    experimental documentation suitable for academic research and competitive
+    submission.
+    
+    Returns:
+        tuple: (best_chromosome, best_fitness, best_moves_count)
+            - best_chromosome: Optimal solution representation
+            - best_fitness: Corresponding fitness value (negative indicates superior performance)
+            - best_moves_count: Number of movement commands in optimal solution
+    """
+    print("=" * 80)
+    print("Enhanced Genetic Algorithm for ISS Spacecraft Assembly Problem")
+    print("Programmable Cubes Challenge - GECCO 2024 Competition")
+    print("=" * 80)
+    print()
+    print("Algorithm Configuration:")
+    print("  • Optimization Approach: Advanced Genetic Algorithm")
+    print("  • Problem Domain: ISS Spacecraft Assembly")
+    print("  • Fitness Direction: Negative values indicate superior solutions")
+    print("  • Target Performance: Fitness ≤ -0.991 (championship level)")
+    print()
+    
+    # Initialize experimental timing and metadata
+    experiment_start_time = time.time()
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Initialize UDP and extract problem parameters
+    print("Initializing User Defined Problem (UDP) for ISS configuration...")
+    udp = programmable_cubes_UDP('ISS')
+    
+    # Extract problem configuration parameters
+    num_cubes = udp.setup['num_cubes']
+    max_cmds = udp.setup['max_cmds']
+    
+    print(f"Problem Instance Characteristics:")
+    print(f"  • Number of programmable cubes: {num_cubes}")
+    print(f"  • Maximum movement commands: {max_cmds}")
+    print(f"  • Population size: {POPULATION_SIZE}")
+    print(f"  • Maximum generations: {GENERATIONS}")
+    print(f"  • Base mutation rate: {BASE_MUTATION_RATE}")
+    print(f"  • Cleanup rate: {CLEANUP_RATE}")
+    print(f"  • Tournament size: {TOURNAMENT_SIZE}")
+    print(f"  • Elite preservation count: {ELITE_SIZE}")
+    print()
+    
+    # Initialize experimental data structures for comprehensive tracking
+    algorithm_start_time = time.time()
+    fitness_evolution_data = []
+    population_diversity_data = []
+    mutation_rate_history = []
+    generation_times = []
+    best_fitness_per_generation = []
+    average_fitness_per_generation = []
+    all_fitness_evaluations = []  # Track all individual fitness evaluations
+    
+    # Initialize population with diverse strategies
+    print("Initializing diverse population using multiple strategies...")
+    population = initialize_population(udp, POPULATION_SIZE)
+    
+    # Comprehensive initial population evaluation
+    print("Conducting comprehensive initial population evaluation...")
+    initial_evaluation_start = time.time()
+    for individual in tqdm(population, desc="Initial Population Assessment"):
+        fitness = evaluate_individual(individual, udp)
+        all_fitness_evaluations.append(fitness)  # Track all evaluations
+    initial_evaluation_time = time.time() - initial_evaluation_start
+    
+    # Sort population by fitness (negative values are superior)
+    population.sort(key=lambda ind: ind.fitness)
+    
+    # Initialize tracking variables with corrected fitness optimization
+    best_individual = population[0].copy()  # Best individual has smallest (most negative) fitness
+    best_fitness_history = [best_individual.fitness]
+    stagnation_count = 0
+    current_mutation_rate = BASE_MUTATION_RATE
+    
+    # Calculate initial population statistics
+    initial_fitness_values = [ind.fitness for ind in population]
+    initial_average_fitness = np.mean(initial_fitness_values)
+    initial_fitness_std = np.std(initial_fitness_values)
+    
+    print(f"Initial Population Analysis:")
+    print(f"  • Best fitness: {best_individual.fitness:.6f} (moves: {best_individual.moves_count})")
+    print(f"  • Average fitness: {initial_average_fitness:.6f}")
+    print(f"  • Fitness standard deviation: {initial_fitness_std:.6f}")
+    print(f"  • Population diversity: {len(set(initial_fitness_values))}/{POPULATION_SIZE}")
+    if hasattr(best_individual, 'placement_accuracy'):
+        print(f"  • Best placement accuracy: {best_individual.placement_accuracy:.3f}")
+        print(f"  • Best move efficiency: {best_individual.move_efficiency:.3f}")
+    print(f"  • Initial evaluation time: {initial_evaluation_time:.2f} seconds")
+    print()
+    
+    # Store initial experimental data
+    best_fitness_per_generation.append(best_individual.fitness)
+    average_fitness_per_generation.append(initial_average_fitness)
+    mutation_rate_history.append(current_mutation_rate)
+    
+    # Main evolutionary optimization loop
+    print("Commencing evolutionary optimization process...")
+    evolution_start_time = time.time()
+    
+    for generation in tqdm(range(GENERATIONS), desc="Evolutionary Generations"):
+        generation_start_time = time.time()
+        new_population = []
+        
+        # Age population for diversity management
+        for ind in population:
+            ind.age += 1
+        
+        # Elite preservation: retain best individuals (smallest fitness values)
+        elite = sorted(population, key=lambda ind: ind.fitness)[:ELITE_SIZE]
+        new_population.extend([ind.copy() for ind in elite])
+        
+        # Generate offspring through genetic operations
+        while len(new_population) < POPULATION_SIZE:
+            # Tournament selection for parent selection
+            parent1 = _tournament_selection(population)
+            parent2 = _tournament_selection(population)
+            
+            # Genetic crossover operation
+            offspring1, offspring2 = _crossover(parent1, parent2, udp)
+            
+            # Adaptive mutation application
+            offspring1 = adaptive_mutation(offspring1, udp, current_mutation_rate)
+            offspring2 = adaptive_mutation(offspring2, udp, current_mutation_rate)
+            
+            # Local search enhancement
+            offspring1 = local_search(offspring1, udp)
+            offspring2 = local_search(offspring2, udp)
+            
+            new_population.extend([offspring1, offspring2])
+        
+        # Population size regulation
+        new_population = new_population[:POPULATION_SIZE]
+        
 
