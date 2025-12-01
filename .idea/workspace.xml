@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2fc38b45-a8c2-49f7-b85c-2c0b5a3a0149" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/CubeMoveset.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/CubeMoveset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/heuristics/iss/greedy_solver.py" beforeDir="false" afterPath="$PROJECT_DIR$/solver/heuristics/iss/greedy_solver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +74,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1764166221900</updated>
-      <workItem from="1764622009085" duration="353000" />
+      <workItem from="1764622009085" duration="1368000" />
     </task>
     <servers />
   </component>
