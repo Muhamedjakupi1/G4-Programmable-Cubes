@@ -85,5 +85,34 @@ def main():
     print()
 
     algorithm_start_time = time.time()
-    
+
+    # Execute genetic algorithm optimization
+    print("Executing enhanced genetic algorithm optimization...")
+    best_chromosome, best_fitness, best_moves = genetic_algorithm_iss()
+
+    execution_time = time.time() - algorithm_start_time
+
+    print()
+    print("=" * 80)
+    print("Optimization Results Summary")
+    print("=" * 80)
+    print(f"Execution time: {execution_time:.1f} seconds")
+    print(f"Best fitness achieved: {best_fitness:.6f}")
+    print(f"Number of moves: {best_moves}")
+    print(f"Chromosome length: {len(best_chromosome)}")
+
+    # Performance analysis with corrected fitness understanding
+    target_fitness = -0.991
+    baseline_fitness = 0.186  # Original baseline performance
+    current_fitness = best_fitness
+
+    print()
+    print("Performance Analysis:")
+    print(f"  • Baseline performance: {baseline_fitness:.6f}")
+    print(f"  • Target performance: {target_fitness:.6f}")
+    print(f"  • Achieved performance: {current_fitness:.6f}")
+
+    # Calculate performance improvements
+    improvement_over_baseline = baseline_fitness - current_fitness
+    print(f"  • Improvement over baseline: {improvement_over_baseline:.6f}")
 
