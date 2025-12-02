@@ -869,5 +869,230 @@ def genetic_algorithm_iss():
         
         # Population size regulation
         new_population = new_population[:POPULATION_SIZE]
+         # Comprehensive offspring evaluation
+        for individual in new_population:
+            if not individual.is_evaluated:
+                fitness = evaluate_individual(individual, udp)
+                all_fitness_evaluations.append(fitness)  # Track all evaluations
         
+        # Population sorting and best individual tracking
+        new_population.sort(key=lambda ind: ind.fitness)
+        
+        # Fitness improvement detection and stagnation management
+        if new_population[0].fitness < best_individual.fitness:  # Improvement detected
+            best_individual = new_population[0].copy()
+            stagnation_count = 0
+            if (generation + 1) % LOG_INTERVAL == 0:
+                print(f"Generation {generation + 1}: New optimum found | Fitness = {best_individual.fitness:.6f}")
+        else:
+            stagnation_count += 1
+        
+        # Experimental data collection
+        generation_fitness_values = [ind.fitness for ind in new_population]
+        best_fitness_per_generation.append(new_population[0].fitness)
+        average_fitness_per_generation.append(np.mean(generation_fitness_values))
+        mutation_rate_history.append(current_mutation_rate)
+        
+        best_fitness_history.append(best_individual.fitness)
+        population = new_population
+        
+        # Adaptive mutation rate adjustment for stagnation prevention
+        if stagnation_count > STAGNATION_THRESHOLD:
+            current_mutation_rate = min(MAX_MUTATION_RATE, current_mutation_rate * ADAPTIVE_MUTATION_FACTOR)
+            if (generation + 1) % LOG_INTERVAL == 0:
+                print(f"Stagnation detected | Increasing mutation rate to {current_mutation_rate:.3f}")
+        else:
+            current_mutation_rate = max(BASE_MUTATION_RATE, current_mutation_rate * 0.98)
+        
+        # Population restart mechanism for severe stagnation
+        if stagnation_count > 50:
+            print("Severe stagnation detected | Implementing population restart")
+            new_pop = initialize_population(udp, POPULATION_SIZE - ELITE_SIZE)
+            population = elite + new_pop
+            stagnation_count = 0
+            current_mutation_rate = BASE_MUTATION_RATE
+        
+        # Record generation timing
+        generation_time = time.time() - generation_start_time
+        generation_times.append(generation_time)
+        
+        # Periodic progress reporting
+        if (generation + 1) % LOG_INTERVAL == 0:
+            current_best = new_population[0].fitness
+            current_avg = np.mean(generation_fitness_values)
+            elapsed = time.time() - algorithm_start_time
+            
+            print(f"Generation {generation + 1:3d}: Best = {current_best:.6f} | "
+                  f"Average = {current_avg:.6f} | Stagnation = {stagnation_count} | "
+                  f"Mutation Rate = {current_mutation_rate:.3f} | Elapsed = {elapsed:.1f}s")
+    
+    # Calculate comprehensive experimental results
+    total_evolution_time = time.time() - evolution_start_time
+    total_experiment_time = time.time() - experiment_start_time
+    
+    print()
+    print("=" * 80)
+    print("Comprehensive Experimental Results Analysis")
+    print("=" * 80)
+    
+    # Final performance metrics
+    final_fitness = best_individual.fitness
+    final_moves = best_individual.moves_count
+    final_chromosome_length = len(best_individual.chromosome)
+    
+    print(f"Optimization Performance Metrics:")
+    print(f"  • Final best fitness: {final_fitness:.6f}")
+    print(f"  • Number of moves used: {final_moves}")
+    print(f"  • Chromosome length: {final_chromosome_length}")
+    print(f"  • Total evolution time: {total_evolution_time:.2f} seconds")
+    print(f"  • Total experiment time: {total_experiment_time:.2f} seconds")
+    print(f"  • Average generation time: {np.mean(generation_times):.3f} seconds")
+    
+    # Advanced performance analysis
+    if hasattr(best_individual, 'placement_accuracy'):
+        print(f"  • Final placement accuracy: {best_individual.placement_accuracy:.3f}")
+        print(f"  • Final move efficiency: {best_individual.move_efficiency:.3f}")
+    
+    # Convergence analysis
+    total_improvement = best_fitness_history[0] - final_fitness
+    improvement_rate = total_improvement / GENERATIONS if GENERATIONS > 0 else 0
+    
+    print(f"Convergence Analysis:")
+    print(f"  • Total fitness improvement: {total_improvement:.6f}")
+    print(f"  • Average improvement per generation: {improvement_rate:.6f}")
+    print(f"  • Final stagnation count: {stagnation_count}")
+    
+    # Competitive performance assessment
+    target_fitness = -0.991  # Championship target
+    benchmark_fitness = 0.186  # Original baseline performance
+    
+    print(f"Competitive Performance Assessment:")
+    print(f"  • Championship target: {target_fitness:.6f}")
+    print(f"  • Baseline performance: {benchmark_fitness:.6f}")
+    print(f"  • Current performance: {final_fitness:.6f}")
+    
+    # Performance categorization and status determination
+    if final_fitness <= target_fitness:
+        performance_status = "CHAMPION"
+        print(f"  • Status: Championship-level performance achieved")
+        print(f"  • Result: Ready for competitive submission")
+    elif final_fitness < -0.5:
+        progress_percentage = (abs(final_fitness) / 0.991) * 100
+        performance_status = "ELITE"
+        print(f"  • Status: Elite performance | Progress: {progress_percentage:.1f}% toward target")
+    elif final_fitness < 0:
+        progress_percentage = (abs(final_fitness) / 0.991) * 100
+        performance_status = "COMPETITIVE"
+        print(f"  • Status: Competitive performance | Progress: {progress_percentage:.1f}% toward target")
+    else:
+        improvement_over_baseline = benchmark_fitness - final_fitness
+        if improvement_over_baseline > 0:
+            performance_status = "IMPROVED"
+            print(f"  • Status: Baseline improvement | Better by {improvement_over_baseline:.6f}")
+        else:
+            performance_status = "EXPERIMENTAL"
+            print(f"  • Status: Experimental result | Fitness: {final_fitness:.6f}")
+    
+    print(f"  • Final Classification: {performance_status}")
+    print()
+    
+    # Generate comprehensive experimental results data structure
+    comprehensive_results = {
+        "experiment_metadata": {
+            "algorithm_name": "Enhanced Genetic Algorithm",
+            "problem_type": "ISS Spacecraft Assembly",
+            "timestamp": timestamp,
+            "total_experiment_duration_seconds": total_experiment_time,
+            "evolution_duration_seconds": total_evolution_time,
+            "initial_evaluation_duration_seconds": initial_evaluation_time
+        },
+        "algorithm_configuration": {
+            "population_size": POPULATION_SIZE,
+            "max_generations": GENERATIONS,
+            "tournament_size": TOURNAMENT_SIZE,
+            "elite_size": ELITE_SIZE,
+            "crossover_rate": CROSSOVER_RATE,
+            "base_mutation_rate": BASE_MUTATION_RATE,
+            "max_mutation_rate": MAX_MUTATION_RATE,
+            "max_chromosome_length": MAX_CHROMOSOME_LENGTH,
+            "min_chromosome_length": MIN_CHROMOSOME_LENGTH,
+            "local_search_rate": LOCAL_SEARCH_RATE,
+            "cleanup_rate": CLEANUP_RATE,
+            "stagnation_threshold": STAGNATION_THRESHOLD,
+            "adaptive_mutation_factor": ADAPTIVE_MUTATION_FACTOR
+        },
+        "problem_configuration": {
+            "number_of_cubes": num_cubes,
+            "maximum_commands": max_cmds,
+            "target_fitness": target_fitness,
+            "baseline_fitness": benchmark_fitness
+        },
+        "optimization_results": {
+            "final_best_fitness": final_fitness,
+            "final_moves_count": final_moves,
+            "final_chromosome_length": final_chromosome_length,
+            "total_fitness_improvement": total_improvement,
+            "average_improvement_per_generation": improvement_rate,
+            "final_stagnation_count": stagnation_count,
+            "performance_status": performance_status,
+            "achieved_target": final_fitness <= target_fitness,
+            "improvement_over_baseline": benchmark_fitness - final_fitness
+        },
+        "convergence_data": {
+            "best_fitness_evolution": best_fitness_per_generation,
+            "average_fitness_evolution": average_fitness_per_generation,
+            "mutation_rate_history": mutation_rate_history,
+            "generation_times": generation_times
+        },
+        "solution_details": {
+            "best_chromosome": best_individual.chromosome,
+            "chromosome_preview": best_individual.chromosome[:30] if len(best_individual.chromosome) > 30 else best_individual.chromosome
+        }
+    }
+    
+    # Add detailed metrics if available
+    if hasattr(best_individual, 'placement_accuracy'):
+        comprehensive_results["optimization_results"]["placement_accuracy"] = best_individual.placement_accuracy
+        comprehensive_results["optimization_results"]["move_efficiency"] = best_individual.move_efficiency
+    
+    # Save comprehensive experimental results
+    print(f"Saving comprehensive experimental results...")
+    results_file_path = save_experimental_results(comprehensive_results)
+    
+    # Generate and save academic visualizations
+    print(f"Generating visualization plots...")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    results_path = os.path.join(repo_root, RESULTS_DIR)
+    os.makedirs(results_path, exist_ok=True)
+    saved_plots = save_solution_visualizations(udp, best_individual.chromosome, results_path, timestamp)
+    
+    # Generate and save convergence analysis plot
+    convergence_plot_path = save_convergence_plot(
+        all_fitness_evaluations, 
+        best_fitness_per_generation, 
+        results_path, 
+        timestamp
+    )
+    
+    print()
+    print("Experimental Documentation Summary:")
+    if results_file_path:
+        print(f"  • Results file: {os.path.basename(results_file_path)}")
+    if convergence_plot_path:
+        print(f"  • Convergence plot: {os.path.basename(convergence_plot_path)}")
+    print(f"  • Solution visualizations: Generated in results directory")
+    print()
+    
+    print("Optimal solution chromosome preview (first 30 elements):")
+    chromosome_preview = best_individual.chromosome[:30] if len(best_individual.chromosome) > 30 else best_individual.chromosome
+    print(f"  {chromosome_preview}" + ("..." if len(best_individual.chromosome) > 30 else ""))
+    
+    print()
+    print("=" * 80)
+    print("Enhanced Genetic Algorithm Optimization Completed")
+    print(f"Performance Classification: {performance_status}")
+    print("Comprehensive experimental documentation generated")
+    print("=" * 80)
+    
+    return best_individual.chromosome, best_individual.fitness, best_individual.moves_count
 
