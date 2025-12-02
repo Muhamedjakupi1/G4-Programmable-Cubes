@@ -1,10 +1,11 @@
 # Programmable Cubes challenge
 # GECCO 2024 Space Optimisation Competition (SpOC)
 
+import os
 from numba import njit
 import numpy as np
 from numba.typed import List
-# from src.CubeMoveset import MoveSetRev //ledi e bon push
+from src.CubeMoveset import MoveSetRev
 import json
 import matplotlib.pyplot as plt
 
@@ -14,26 +15,31 @@ import matplotlib.pyplot as plt
 ############################################################################################################################################
 
 class programmable_cubes_UDP:
-    def __init__(self, problem):
+    def __init__(self, problem, root_dir='.'):
         """
         A Pygmo compatible UDP User Defined Problem representing the Programmable Cubes challenge for SpOC 2024.
-        https://esa.github.io/pygmo2/tutorials/coding_udp_simple.html explains more details on UDPs.
 
         Args:
             problem: Name of the problem / scenario to be used. Implemented: ISS, JWST, Enterprise.
+            root_dir: Root directory of the project (default: current directory)
         """
         # Variable name used for storing cube ensemble configuration after chromosome evaluation
         self.final_cube_positions = None
 
+        # Store root directory
+        self.root_dir = root_dir
+
         # Load specifications of the problem
-        with open('problems/{}.json'.format(problem), 'r') as infile:
+        problem_path = os.path.join(root_dir, 'problems', f'{problem}.json')
+        with open(problem_path, 'r') as infile:
             self.setup = json.load(infile)
 
         # Load target cube locations and cube types
-        self.target_cube_positions = np.load('{}/Target_Config.npy'.format(self.setup['path']))
-        self.target_cube_types = np.load('{}/Target_Cube_Types.npy'.format(self.setup['path']))
+        data_path = os.path.join(root_dir, self.setup['path'])
+        self.target_cube_positions = np.load(os.path.join(data_path, 'Target_Config.npy'))
+        self.target_cube_types = np.load(os.path.join(data_path, 'Target_Cube_Types.npy'))
         # Load cube types of initial configuration
-        self.initial_cube_types = np.load('{}/Initial_Cube_Types.npy'.format(self.setup['path']))
+        self.initial_cube_types = np.load(os.path.join(data_path, 'Initial_Cube_Types.npy'))
 
     def get_bounds(self):
         """
@@ -97,7 +103,8 @@ class programmable_cubes_UDP:
         # Note: we do not check here whether a custom cube configuration is valid
         # (i.e., whether all cubes are connected with each other).
         if initial_configuration is None:
-            initial_configuration = np.load('{}/Initial_Config.npy'.format(self.setup['path']))
+            initial_config_path = os.path.join(self.root_dir, self.setup['path'], 'Initial_Config.npy')
+            initial_configuration = np.load(initial_config_path)
 
         # Create the cube ensemble with an initial cube configuration.
         cubes = ProgrammableCubes(initial_configuration)
@@ -161,7 +168,7 @@ class programmable_cubes_UDP:
             ax.voxels(cube_tensor[i], facecolor=self.setup['colours'][cube_type_to_plot[i]], edgecolors='k', alpha=.4)
 
         plt.tight_layout()
-        plt.show()
+        # plt.show()
 
     ############################################################################################################################################
 
