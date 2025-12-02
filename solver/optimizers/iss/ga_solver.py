@@ -1095,4 +1095,192 @@ def genetic_algorithm_iss():
     print("=" * 80)
     
     return best_individual.chromosome, best_individual.fitness, best_individual.moves_count
+  # Initialize population
+    print("Initializing  population...")
+    population = initialize_population(udp, POPULATION_SIZE)
+    
+    # Evaluate initial population
+    print("Evaluating initial population...")
+    for individual in tqdm(population, desc="Initial Evaluation"):
+        evaluate_individual(individual, udp)
+    
+    # : Sort by fitness (smallest first)
+    population.sort(key=lambda ind: ind.fitness)
+    
+    best_individual = population[0].copy()  # First element is now the best
+    best_fitness_history = [best_individual.fitness]
+    stagnation_count = 0
+    current_mutation_rate = BASE_MUTATION_RATE
+    
+    print(f"Initial best fitness: {best_individual.fitness:.6f} (moves: {best_individual.moves_count})")
+    if hasattr(best_individual, 'placement_accuracy'):
+        print(f"Initial placement accuracy: {best_individual.placement_accuracy:.3f}")
+    print()
+    
+    # Main evolution loop
+    print("Starting  evolution...")
+    for generation in tqdm(range(GENERATIONS), desc=" Evolution"):
+        new_population = []
+        
+        # Age population
+        for ind in population:
+            ind.age += 1
+        
+        #  elitism: Keep the best (smallest fitness)
+        elite = sorted(population, key=lambda ind: ind.fitness)[:ELITE_SIZE]
+        new_population.extend([ind.copy() for ind in elite])
+        
+        # Generate offspring
+        while len(new_population) < POPULATION_SIZE:
+            #  selection
+            parent1 = _tournament_selection(population)
+            parent2 = _tournament_selection(population)
+            
+            #  crossover
+            offspring1, offspring2 = _crossover(parent1, parent2, udp)
+            
+            # Adaptive mutation
+            offspring1 = adaptive_mutation(offspring1, udp, current_mutation_rate)
+            offspring2 = adaptive_mutation(offspring2, udp, current_mutation_rate)
+            
+            # Local search
+            offspring1 = local_search(offspring1, udp)
+            offspring2 = local_search(offspring2, udp)
+            
+            # Reset age
+            offspring1.age = 0
+            offspring2.age = 0
+            
+            new_population.extend([offspring1, offspring2])
+        
+        # Trim population
+        new_population = new_population[:POPULATION_SIZE]
+        
+        # Evaluate new individuals
+        for individual in new_population:
+            if not individual.is_evaluated:
+                evaluate_individual(individual, udp)
+        
+        # : Sort by fitness (smallest first)
+        new_population.sort(key=lambda ind: ind.fitness)
+        
+        # : Check for improvement (smaller is better)
+        if new_population[0].fitness < best_individual.fitness:
+            improvement = best_individual.fitness - new_population[0].fitness
+            best_individual = new_population[0].copy()
+            stagnation_count = 0
+            current_mutation_rate = BASE_MUTATION_RATE  # Reset mutation rate
+            
+            # Early stopping if we achieve target
+            if best_individual.fitness <= -0.99:
+                print(f"\n🎯 TARGET ACHIEVED! Fitness: {best_individual.fitness:.6f}")
+                break
+        else:
+            stagnation_count += 1
+            
+            # Adaptive mutation: increase rate on stagnation
+            if stagnation_count > STAGNATION_THRESHOLD:
+                current_mutation_rate = min(MAX_MUTATION_RATE, 
+                                           BASE_MUTATION_RATE * (ADAPTIVE_MUTATION_FACTOR ** (stagnation_count - STAGNATION_THRESHOLD)))
+        
+        best_fitness_history.append(best_individual.fitness)
+        population = new_population
+        
+        # Restart if severely stagnated
+        if stagnation_count > 50:
+            print(f"\nSevere stagnation at generation {generation + 1}. Restarting...")
+            # Keep top 3, regenerate rest
+            super_elite = sorted(population, key=lambda ind: ind.fitness)[:3]
+            new_population = initialize_population(udp, POPULATION_SIZE - 3)
+            
+            for ind in new_population:
+                evaluate_individual(ind, udp)
+            
+            population = super_elite + new_population
+            population.sort(key=lambda ind: ind.fitness)
+            stagnation_count = 0
+            current_mutation_rate = BASE_MUTATION_RATE
+        
+        # Logging
+        if (generation + 1) % LOG_INTERVAL == 0:
+            avg_fitness = np.mean([ind.fitness for ind in population])
+            diversity = np.std([ind.fitness for ind in population])
+            elapsed = time.time() - start_time
+            
+            print(f"Gen {generation + 1:3d}: Best = {best_individual.fitness:.6f}, "
+                  f"Avg = {avg_fitness:.6f}, Div = {diversity:.6f}")
+            print(f"         Moves = {best_individual.moves_count}, "
+                  f"Stagnation = {stagnation_count}, MutRate = {current_mutation_rate:.3f}")
+            
+            if hasattr(best_individual, 'placement_accuracy'):
+                print(f"         Accuracy = {best_individual.placement_accuracy:.3f}, "
+                      f"Time = {elapsed:.1f}s")
+            
+            # Progress analysis
+            if best_individual.fitness < 0:
+                progress = (abs(best_individual.fitness) / 0.991) * 100
+                print(f"         Progress toward -0.991: {progress:.1f}%")
+            print()
+    
+    print()
+    print("=" * 60)
+    print("🔧  RESULTS")
+    print("=" * 60)
+    
+    elapsed_time = time.time() - start_time
+    
+    # Final results
+    print(f"Best fitness achieved: {best_individual.fitness:.6f}")
+    print(f"Number of moves used: {best_individual.moves_count}")
+    print(f"Chromosome length: {len(best_individual.chromosome)}")
+    print(f"Total evolution time: {elapsed_time:.1f} seconds")
+    
+    # Detailed analysis
+    if hasattr(best_individual, 'placement_accuracy'):
+        print(f"Placement accuracy: {best_individual.placement_accuracy:.3f}")
+        print(f"Move efficiency: {best_individual.move_efficiency:.3f}")
+    
+    # Target analysis
+    target_fitness = -0.991
+    current_fitness = best_individual.fitness
+    
+    if current_fitness <= target_fitness:
+        print(f"🎯 TARGET ACHIEVED! Exceeded first place performance!")
+        print(f"✅ Ready for championship submission!")
+        status = "CHAMPION"
+    elif current_fitness < -0.5:
+        progress = (abs(current_fitness) / 0.991) * 100
+        print(f"🏆 EXCELLENT PERFORMANCE! Progress: {progress:.1f}%")
+        status = "ELITE"
+    elif current_fitness < 0:
+        progress = (abs(current_fitness) / 0.991) * 100
+        print(f"✅ NEGATIVE FITNESS ACHIEVED! Progress: {progress:.1f}%")
+        status = "COMPETITIVE"
+    else:
+        improvement = 0.186 - current_fitness  # Compare to original 9th place
+        if improvement > 0:
+            print(f"📈 IMPROVEMENT! Better by {improvement:.6f}")
+            status = "IMPROVED"
+        else:
+            print(f"⚠️ Still needs work. Current: {current_fitness:.6f}")
+            status = "NEEDS WORK"
+    
+    print(f"🏆 Status: {status}")
+    
+    # Show improvement
+    improvement_total = best_fitness_history[0] - best_individual.fitness
+    print(f"Total improvement: {improvement_total:.6f}")
+    
+    print()
+    print("Best chromosome (first 30 elements):")
+    print(best_individual.chromosome[:30], "..." if len(best_individual.chromosome) > 30 else "")
+    
+    print()
+    print("🔧  genetic algorithm completed!")
+    
+    return best_individual.chromosome, best_individual.fitness, best_individual.moves_count
+
+
+if __name__ == "__main__":
+    best_chromosome, best_fitness, best_moves = genetic_algorithm_iss()
 
