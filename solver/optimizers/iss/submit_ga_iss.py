@@ -103,7 +103,7 @@ def main():
 
     # Performance analysis with corrected fitness understanding
     target_fitness = -0.991
-    baseline_fitness = 0.186  # Original baseline performance
+    baseline_fitness = 0.186  # Original baselines performance
     current_fitness = best_fitness
 
     print()
@@ -114,7 +114,7 @@ def main():
 
     # Calculate performance improvements
     improvement_over_baseline = baseline_fitness - current_fitness
-    print(f"  • Improvement over baseline: {improvement_over_baseline:.6f}")
+    print(f"  • Improvement over baselines: {improvement_over_baseline:.6f}")
 
 
  # Determine performance classification
@@ -146,8 +146,8 @@ def main():
         if improvement_over_baseline > 0:
             improvement_percentage = (improvement_over_baseline / baseline_fitness) * 100
             performance_classification = "IMPROVED"
-            expected_ranking = "Better than baseline"
-            print(f"  • Status: Improved performance | {improvement_percentage:.1f}% better than baseline")
+            expected_ranking = "Better than baselines"
+            print(f"  • Status: Improved performance | {improvement_percentage:.1f}% better than baselines")
         else:
             performance_classification = "EXPERIMENTAL"
             expected_ranking = "Experimental"
@@ -186,7 +186,7 @@ def main():
         f"Configuration: Population=100, Generations=250, comprehensive optimization strategy. "
         f"Performance: {current_fitness:.6f} fitness with {best_moves} moves. "
         f"Classification: {performance_classification}. "
-        f"Improvement over baseline: {improvement_over_baseline:.6f}. "
+        f"Improvement over baselines: {improvement_over_baseline:.6f}. "
         f"Expected ranking: {expected_ranking}."
     )
     

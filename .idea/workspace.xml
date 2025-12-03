@@ -6,7 +6,19 @@
   <component name="ChangeListManager">
     <list default="true" id="2fc38b45-a8c2-49f7-b85c-2c0b5a3a0149" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/baselines/iss/random_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/solver/baselines/iss/random_search.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/solver/baselines/iss/submit_random_search_iss.py" beforeDir="false" afterPath="$PROJECT_DIR$/solver/baselines/iss/submit_random_search_iss.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/optimizers/iss/ga_solver.py" beforeDir="false" afterPath="$PROJECT_DIR$/solver/optimizers/iss/ga_solver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/optimizers/iss/submit_ga_iss.py" beforeDir="false" afterPath="$PROJECT_DIR$/solver/optimizers/iss/submit_ga_iss.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/results/iss/iss_algorithm_analysis.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/results/random_search_iss_convergence_20251202_141844.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/results/random_search_iss_convergence_20251203_083200.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/results/random_search_iss_ensemble_20251202_141844.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/results/random_search_iss_ensemble_20251203_083200.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/results/random_search_iss_results_20251202_141844.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/results/random_search_iss_results_20251203_083200.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/results/random_search_iss_target_20251202_141844.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/solver/results/random_search_iss_target_20251203_083200.png" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

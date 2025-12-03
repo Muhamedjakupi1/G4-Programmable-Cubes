@@ -964,7 +964,7 @@ def genetic_algorithm_iss():
     
     # Competitive performance assessment
     target_fitness = -0.991  # Championship target
-    benchmark_fitness = 0.186  # Original baseline performance
+    benchmark_fitness = 0.186  # Original baselines performance
     
     print(f"Competitive Performance Assessment:")
     print(f"  • Championship target: {target_fitness:.6f}")

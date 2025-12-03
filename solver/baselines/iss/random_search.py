@@ -3,12 +3,12 @@
 Random Search Baseline Algorithm for the International Space Station (ISS) Configuration Problem
 Programmable Cubes Challenge - GECCO 2024 Space Optimisation Competition (SpOC)
 
-This module implements a stochastic optimization baseline using pure random search
+This module implements a stochastic optimization baselines using pure random search
 for the ISS spacecraft assembly problem. The algorithm serves as a benchmark for
 comparative analysis against more sophisticated metaheuristic optimization approaches.
 
 The random search methodology generates candidate solutions through uniform random
-sampling of the solution space, providing an unbiased baseline for algorithmic
+sampling of the solution space, providing an unbiased baselines for algorithmic
 performance evaluation in the context of 3D modular spacecraft assembly optimization.
 
 Usage:
@@ -272,7 +272,7 @@ def random_search_iss():
     """
     Execute stochastic optimization using random search methodology for the ISS assembly problem.
 
-    This function implements a pure random search algorithm as a baseline optimization
+    This function implements a pure random search algorithm as a baselines optimization
     approach. The method performs uniform random sampling of the solution space to
     establish benchmark performance metrics for comparative analysis against more
     sophisticated metaheuristic algorithms.
@@ -423,7 +423,7 @@ def random_search_iss():
 
     # Save experimental results for comparative analysis
     repo_root_path = os.path.join(os.path.dirname(__file__), '..', '..', '..')
-    results_dir = os.path.join(repo_root_path, 'solver', 'results')
+    results_dir = os.path.join(repo_root_path, 'solver', 'results', 'iss', 'baselines')
     results_file = save_experimental_results(results_data, results_dir)
 
     # Generate and save comprehensive visualizations

@@ -3,7 +3,7 @@
 Academic Submission Generator for Random Search Baseline Algorithm
 Programmable Cubes Challenge - GECCO 2024 Space Optimisation Competition (SpOC)
 
-This module executes the random search baseline optimization algorithm and
+This module executes the random search baselines optimization algorithm and
 generates properly formatted submission files for the International Space
 Station (ISS) assembly problem. The implementation follows academic standards
 for reproducible research and maintains comprehensive experimental records
@@ -17,7 +17,7 @@ Usage:
     python solver/baselines/iss/submit_random_search_iss.py
 
 Features:
-    • Rigorous random search baseline implementation
+    • Rigorous random search baselines implementation
     • Deterministic results through controlled random seed
     • Standards-compliant JSON submission format
     • Comprehensive performance analysis and statistical reporting
@@ -123,7 +123,7 @@ def create_fixed_length_decision_vector(chromosome, max_moves):
 
 def main():
     """
-    Execute comprehensive experimental protocol for random search baseline evaluation.
+    Execute comprehensive experimental protocol for random search baselines evaluation.
 
     This function orchestrates the complete experimental workflow including:
     algorithm execution, performance analysis, result archival, and competition
@@ -136,7 +136,7 @@ def main():
     print("=" * 80)
     print("ACADEMIC EXPERIMENTAL FRAMEWORK: RANDOM SEARCH BASELINE EVALUATION")
     print("=" * 80)
-    print("OBJECTIVE: Establish empirical baseline for comparative algorithmic analysis")
+    print("OBJECTIVE: Establish empirical baselines for comparative algorithmic analysis")
     print("METHODOLOGY: Stochastic optimization via uniform random sampling")
     print("SCOPE: International Space Station (ISS) modular assembly optimization")
     print("\nEXPERIMENTAL FEATURES:")
@@ -169,7 +169,7 @@ def main():
     reference_fitness_values = {
         "championship_optimum": -0.991,  # Historical championship performance
         "competitive_threshold": -0.5,  # Competitive algorithm threshold
-        "baseline_reference": 0.186  # Typical baseline performance
+        "baseline_reference": 0.186  # Typical baselines performance
     }
 
     current_fitness = best_fitness
@@ -183,10 +183,10 @@ def main():
     # Calculate relative performance metrics
     if current_fitness < reference_fitness_values['baseline_reference']:
         improvement = reference_fitness_values['baseline_reference'] - current_fitness
-        print(f"  • Improvement over baseline: {improvement:.6f}")
+        print(f"  • Improvement over baselines: {improvement:.6f}")
     else:
         gap = current_fitness - reference_fitness_values['baseline_reference']
-        print(f"  • Performance gap from baseline: {gap:.6f}")
+        print(f"  • Performance gap from baselines: {gap:.6f}")
 
     # Academic performance classification
     if current_fitness <= reference_fitness_values['championship_optimum']:
@@ -212,11 +212,11 @@ def main():
         improvement_pct = ((reference_fitness_values['baseline_reference'] - current_fitness) /
                            reference_fitness_values['baseline_reference']) * 100
         performance_class = "SATISFACTORY"
-        performance_description = f"Above-baseline performance ({improvement_pct:.1f}% improvement)"
+        performance_description = f"Above-baselines performance ({improvement_pct:.1f}% improvement)"
         academic_rating = "C+"
     else:
         performance_class = "BASELINE"
-        performance_description = "Typical baseline performance achieved"
+        performance_description = "Typical baselines performance achieved"
         academic_rating = "C"
 
     print(f"\nPERFORMANCE CLASSIFICATION:")
