@@ -48,7 +48,7 @@ from src.programmable_cubes_UDP import programmable_cubes_UDP
 N_ITERATIONS = 1000  # Experimental sample size for stochastic exploration
 LOG_INTERVAL = 100  # Progress reporting frequency for convergence monitoring
 RANDOM_SEED = 42  # Reproducibility seed for experimental validation
-RESULTS_DIR = "solver/results/jwst"  # Academic output directory for experimental data
+RESULTS_DIR = "solver/results/jwst/baselines"  # Academic output directory for experimental data
 
 
 def generate_stochastic_chromosome(num_cubes, max_length=1500):
@@ -102,7 +102,7 @@ def evaluate_fitness_function(udp, chromosome):
         return fitness_score[0]  # UDP returns a list with one element
     except Exception as e:
         print(f"Error in fitness evaluation: {e}")
-        return float('-inf')  # Return worst possible fitness for invalid solutions
+        return -1e308  # Return worst possible fitness for invalid solutions
 
 
 def quantify_solution_complexity(chromosome):
@@ -335,7 +335,7 @@ def stochastic_search_jwst():
         print()
 
         # Initialize optimization tracking variables
-        best_fitness = float('inf')
+        best_fitness = 1e308
         best_chromosome = None
         best_moves = 0
         fitness_history = []
