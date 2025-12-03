@@ -1,10 +1,38 @@
-# Add the src directory and the repository root to the Python path
+#!/usr/bin/env python3
+"""
+Enhanced Genetic Algorithm Solution Submission for ISS Problem
+Programmable Cubes Challenge - GECCO 2024 Space Optimisation Competition (SpOC)
+
+This module executes the enhanced genetic algorithm optimization for the International
+Space Station spacecraft assembly problem and generates a properly formatted submission
+file for competitive evaluation. The algorithm incorporates corrected fitness direction
+optimization, inverse-move cleanup, adaptive mutation mechanisms, and comprehensive
+performance analysis.
+
+Key algorithmic improvements include:
+- Corrected fitness direction optimization (negative values indicate superior solutions)
+- All selection, elitism, and crossover operators properly configured
+- Inverse-move cleanup for enhanced solution efficiency
+- Adaptive mutation rate adjustment for stagnation prevention
+
+Target Performance: Achieve fitness of -0.991 or superior for championship-level results
+
+Usage:
+    python solver/optimizers/iss/submit_ga_iss.py
+
+Dependencies:
+    - numpy: Numerical array operations
+    - json: Submission file formatting
+    - time: Performance timing analysis
+"""
+
 import os
 import sys
 import json
 import numpy as np
 import time
 
+# Add the src directory and the repository root to the Python path
 repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
