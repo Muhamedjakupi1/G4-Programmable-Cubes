@@ -30,8 +30,7 @@ sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
 
 from greedy_solver import greedy_heuristic_optimization_iss
-from submission_helper import create_submission
-# submission_helper is not yet implemented
+from src.submission_helper import create_submission
 
 def generate_standardized_decision_vector(chromosome, max_moves):
     """

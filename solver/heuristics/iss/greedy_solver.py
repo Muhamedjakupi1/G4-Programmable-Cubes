@@ -46,7 +46,7 @@ matplotlib.use('Agg')  # Use non-interactive backend for automated plotting
 import matplotlib.pyplot as plt
 
 # Add the src directory and the repository root to the Python path
-repo_root = os.path.join(os.path.dirname(__file__), '..', '..')
+repo_root = os.path.join(os.path.dirname(__file__), '..', '..','..')
 sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
 
