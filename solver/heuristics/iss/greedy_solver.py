@@ -182,7 +182,8 @@ def build_chromosome(udp):
         if np.random.random() < 0.7:
             move_command = select_greedy_move
             (cube_id, udp, recent_moves)
-        else: move_command = np.random.randint(0, 6)
+            else:
+            move_command = np.random.randint(0, 6)
 
         if move_command == -1:
             break
