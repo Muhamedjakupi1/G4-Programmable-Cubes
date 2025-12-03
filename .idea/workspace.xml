@@ -5,14 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2fc38b45-a8c2-49f7-b85c-2c0b5a3a0149" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/solver/baselines/jwst/submit_random_search_jwst.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/solver/heuristics/jwst/greedy_solver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/solver/baselines/jwst/random_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/solver/baselines/jwst/random_search.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/solver/results/jwst/random_search_jwst_convergence_20251203_193106.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/solver/results/jwst/random_search_jwst_ensemble_20251203_193106.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/solver/results/jwst/random_search_jwst_target_20251203_193106.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/solver/results/jwst/stochastic_search_results_20251203_192258.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/solver/results/jwst/stochastic_search_results_20251203_193106.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
