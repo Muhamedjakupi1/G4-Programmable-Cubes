@@ -58,7 +58,7 @@ repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
 
-from programmable_cubes_UDP import programmable_cubes_UDP
+from src.programmable_cubes_UDP import programmable_cubes_UDP
 
 # Enhanced Configuration for Enterprise (scaled appropriately)
 POPULATION_SIZE = 60  # Reduced for larger problem space
