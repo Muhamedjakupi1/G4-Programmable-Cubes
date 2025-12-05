@@ -236,3 +236,35 @@ def main():
     print(f"  • Decision vector length: {len(decision_vector)}")
     print(f"  • Preview: {decision_vector[:10]}...")
 
+    # Validate JSON format integrity
+    try:
+        with open(output_file, 'r') as f:
+            loaded_submission = json.load(f)
+        print(f"  • JSON format validation: PASSED")
+        print(f"  • Submission keys: {list(loaded_submission.keys())}")
+    except Exception as e:
+        print(f"  • JSON format validation: FAILED - {e}")
+
+    print()
+    print("=" * 80)
+    print("Submission Generation Completed")
+    print(f"Performance Level: {performance_classification}")
+    print(f"Expected Ranking: {expected_ranking}")
+
+    if current_fitness <= target_fitness:
+        print("Result: Championship-level submission ready")
+    elif current_fitness < 0:
+        print("Result: Competitive submission ready")
+    elif improvement_over_baseline > 0:
+        print("Result: Improved baseline submission ready")
+    else:
+        print("Result: Experimental submission ready")
+
+    print(f"Total execution time: {execution_time:.1f} seconds")
+    print("=" * 80)
+
+    return output_file
+
+
+if __name__ == "__main__":
+    submission_file = main()
