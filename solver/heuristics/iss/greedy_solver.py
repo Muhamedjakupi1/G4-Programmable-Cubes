@@ -59,7 +59,7 @@ RECENT_MOVES_MEMORY = 3  # Temporal memory for recent cube movements (redundancy
 RANDOM_SEED = None  # Stochastic seed (None enables non-deterministic exploration)
 LOG_INTERVAL = 50  # Progress reporting frequency for convergence monitoring
 EXPLORATION_FACTOR = 0.3  # Probability ratio for stochastic versus greedy selection
-RESULTS_DIR = "solver/results/iss"  # Academic output directory for experimental data
+RESULTS_DIR = "solver/results/iss/heuristics"  # Academic output directory for experimental data
 
 
 def calculate_cube_distances(current_positions, target_positions, cube_types, target_cube_types):
