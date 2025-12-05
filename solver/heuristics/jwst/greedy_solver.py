@@ -66,7 +66,7 @@ RECENT_MOVES_MEMORY = 3  # Temporal memory for move redundancy prevention
 RANDOM_SEED = None  # Stochastic seed for reproducibility
 LOG_INTERVAL = 50  # Progress reporting frequency
 EXPLORATION_FACTOR = 0.3  # Exploration-exploitation balance parameter
-RESULTS_DIR = "solver/results/jwst"  # Academic output directory for experimental data
+RESULTS_DIR = "solver/results/jwst/heuristics"  # Academic output directory for experimental data
 
 
 def save_experimental_results(results_data, filename_prefix="greedy_jwst_experiment"):

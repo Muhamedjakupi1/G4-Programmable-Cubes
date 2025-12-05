@@ -422,7 +422,7 @@ def random_search_enterprise():
 
     # Save experimental results for comparative analysis
     repo_root_path = os.path.join(os.path.dirname(__file__), '..', '..', '..')
-    results_dir = os.path.join(repo_root_path, 'solver', 'results')
+    results_dir = os.path.join(repo_root_path, 'solver', 'results', 'enterprise', 'baselines')
     results_file = save_experimental_results(results_data, results_dir)
 
     # Generate and save comprehensive visualizations

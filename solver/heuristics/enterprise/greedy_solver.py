@@ -67,7 +67,7 @@ LOG_INTERVAL = 50                   # More frequent progress reporting for testi
 EXPLORATION_FACTOR = 0.3            # Increased exploration-exploitation balance for better diversity
 GREEDY_FACTOR = 0.7                 # Reduced greedy selection for more exploration
 TEMPERATURE = 0.2                   # Increased temperature for enhanced stochastic behavior
-RESULTS_DIR = "solver/results/enterprise"  # Academic output directory for experimental data
+RESULTS_DIR = "solver/results/enterprise/heuristics"  # Academic output directory for experimental data
 
 
 def save_experimental_results(results_data, filename_prefix="greedy_enterprise_experiment"):
