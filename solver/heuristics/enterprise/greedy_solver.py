@@ -796,3 +796,48 @@ def greedy_heuristic_optimization_enterprise():
             "move_count": int(optimal_moves)
         }
     }
+     # Save experimental results and visualizations
+    print("\nGenerating academic documentation and visualizations...")
+    try:
+        save_experimental_results(experimental_results)
+        save_solution_visualizations(udp, optimal_chromosome, best_fitness)
+        
+        # Generate convergence plot with proper parameters
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        results_path = os.path.join(repo_root, RESULTS_DIR)
+        heuristics_path = os.path.join(results_path, "heuristics")
+        os.makedirs(heuristics_path, exist_ok=True)
+        save_convergence_plot(fitness_history, best_fitness_evolution, heuristics_path, timestamp)
+        
+    except Exception as e:
+        print(f"Documentation generation encountered error: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # Final solution visualization attempt
+    print("\nAttempting solution visualization...")
+    try:
+        if optimal_chromosome is not None:
+            # Evaluate optimal solution to establish final state
+            udp.fitness(optimal_chromosome)
+            
+            print("Displaying target Enterprise configuration...")
+            udp.plot('target')
+            
+            print("Displaying optimized assembly configuration...")
+            udp.plot('ensemble')
+        
+    except Exception as e:
+        print(f"Solution visualization error: {e}")
+        print("Visualization may require display environment. Results remain valid.")
+    
+    print()
+    print("Greedy heuristic optimization completed successfully!")
+    print("=" * 80)
+    
+    return optimal_chromosome, best_fitness, optimal_moves, experimental_results
+
+
+if __name__ == "__main__":
+    # Execute greedy heuristic optimization
+    optimal_chromosome, best_fitness, optimal_moves, experimental_results = greedy_heuristic_optimization_enterprise()
