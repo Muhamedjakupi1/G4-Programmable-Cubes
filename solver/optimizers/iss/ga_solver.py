@@ -51,7 +51,8 @@ from collections import defaultdict
 repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
-from src.programmable_cubes_UDP import programmable_cubes_UDP
+
+from programmable_cubes_UDP import programmable_cubes_UDP
 
 import sys
 import os
@@ -73,7 +74,7 @@ repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
 
-from src.programmable_cubes_UDP import programmable_cubes_UDP
+from programmable_cubes_UDP import programmable_cubes_UDP
 
 # Advanced Genetic Algorithm Configuration Parameters
 POPULATION_SIZE = 100               # Population size for evolutionary optimization
@@ -257,6 +258,7 @@ CLEANUP_RATE = 0.8  # Rate of applying inverse-move cleanup
 # Adaptive parameters
 STAGNATION_THRESHOLD = 25
 ADAPTIVE_MUTATION_FACTOR = 1.5
+
 
 class Individual:
     """Individual with  fitness handling."""
@@ -587,8 +589,9 @@ def _crossover(parent1, parent2, udp):
         
     except Exception:
         return parent1.copy(), parent2.copy()
-    
-    def repair_chromosome(chromosome_seq, udp):
+
+
+def repair_chromosome(chromosome_seq, udp):
     """Enhanced chromosome repair with inverse-move cleanup."""
     if not chromosome_seq:
         return generate_random_chromosome(udp.setup['num_cubes'], MAX_CHROMOSOME_LENGTH)
@@ -869,7 +872,8 @@ def genetic_algorithm_iss():
         
         # Population size regulation
         new_population = new_population[:POPULATION_SIZE]
-         # Comprehensive offspring evaluation
+        
+        # Comprehensive offspring evaluation
         for individual in new_population:
             if not individual.is_evaluated:
                 fitness = evaluate_individual(individual, udp)
@@ -964,7 +968,7 @@ def genetic_algorithm_iss():
     
     # Competitive performance assessment
     target_fitness = -0.991  # Championship target
-    benchmark_fitness = 0.186  # Original baselines performance
+    benchmark_fitness = 0.186  # Original baseline performance
     
     print(f"Competitive Performance Assessment:")
     print(f"  • Championship target: {target_fitness:.6f}")
@@ -1095,7 +1099,8 @@ def genetic_algorithm_iss():
     print("=" * 80)
     
     return best_individual.chromosome, best_individual.fitness, best_individual.moves_count
-  # Initialize population
+    
+    # Initialize population
     print("Initializing  population...")
     population = initialize_population(udp, POPULATION_SIZE)
     
@@ -1283,4 +1288,3 @@ def genetic_algorithm_iss():
 
 if __name__ == "__main__":
     best_chromosome, best_fitness, best_moves = genetic_algorithm_iss()
-
