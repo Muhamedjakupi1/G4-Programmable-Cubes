@@ -287,3 +287,292 @@ def select_next_cube(current_positions, target_positions, cube_types, target_cub
         # Exploitation: select best cube
         best_cube_idx = np.argmax(cube_scores[eligible_cubes])
         return eligible_cubes[best_cube_idx]
+    def evaluate_move_quality(cube_pos, move_command, target_centroid, target_positions=None, cube_type=None, target_cube_types=None):
+    """
+    IMPROVED: Evaluate move quality using enhanced heuristics and target-aware scoring.
+    
+    Args:
+        cube_pos (np.ndarray): Current cube position [3]
+        move_command (int): Move command (0-5)
+        target_centroid (np.ndarray): Target structure centroid [3]
+        target_positions (np.ndarray): Target positions for better evaluation
+        cube_type (int): Type of the cube being moved
+        target_cube_types (np.ndarray): Types of target cubes
+        
+    Returns:
+        float: Quality score (lower is better, negative means closer to target)
+    """
+    # Enhanced move direction approximations with better physics modeling
+    move_directions = [
+        [0, 1, 1],   # Rotation around X-axis (clockwise)
+        [0, -1, -1], # Rotation around X-axis (counterclockwise)
+        [1, 0, 1],   # Rotation around Y-axis (clockwise)
+        [-1, 0, -1], # Rotation around Y-axis (counterclockwise)
+        [1, 1, 0],   # Rotation around Z-axis (clockwise)
+        [-1, -1, 0], # Rotation around Z-axis (counterclockwise)
+    ]
+    
+    # Normalize the direction vector
+    move_direction = np.array(move_directions[move_command])
+    if np.linalg.norm(move_direction) > 0:
+        move_direction = move_direction / np.linalg.norm(move_direction)
+    
+    # Calculate approximate new position
+    new_pos = cube_pos + move_direction
+    
+    # Enhanced distance calculations
+    current_distance = np.linalg.norm(cube_pos - target_centroid)
+    new_distance = np.linalg.norm(new_pos - target_centroid)
+    
+    # Primary heuristic: distance improvement
+    distance_improvement = new_distance - current_distance
+    
+    # Secondary heuristic: alignment with direction to centroid
+    to_centroid = target_centroid - cube_pos
+    if np.linalg.norm(to_centroid) > 0:
+        to_centroid_normalized = to_centroid / np.linalg.norm(to_centroid)
+        alignment_score = -np.dot(move_direction, to_centroid_normalized)  # Negative for reward
+    else:
+        alignment_score = 0
+    
+    # Tertiary heuristic: target-aware scoring (if target info available)
+    target_score = 0
+    if target_positions is not None and cube_type is not None and target_cube_types is not None:
+        # Find targets of the same type
+        target_mask = target_cube_types == cube_type
+        if np.any(target_mask):
+            target_positions_same_type = target_positions[target_mask]
+            
+            # Calculate distances to targets of same type
+            current_distances_to_targets = np.linalg.norm(cube_pos - target_positions_same_type, axis=1)
+            new_distances_to_targets = np.linalg.norm(new_pos - target_positions_same_type, axis=1)
+            
+            # Find best improvement to any target of same type
+            best_current = np.min(current_distances_to_targets)
+            best_new = np.min(new_distances_to_targets)
+            target_score = (best_new - best_current) * 2.0  # Weighted heavily
+    
+    # Quaternary heuristic: move diversity (prefer different move types)
+    move_diversity_bonus = 0.01 * (move_command % 2)  # Small bonus for alternating moves
+    
+    # Combine all heuristics with weights
+    total_score = (
+        distance_improvement * 1.0 +      # Primary weight
+        alignment_score * 0.3 +           # Secondary weight
+        target_score * 1.5 +              # Target-aware weight (highest)
+        move_diversity_bonus              # Small diversity bonus
+    )
+    
+    # Add temperature-based random component for exploration
+    random_component = np.random.random() * TEMPERATURE
+    
+    return total_score + random_component
+
+
+def select_best_move(cube_id, current_positions, target_centroid, udp, recent_moves, target_positions=None, cube_types=None, target_cube_types=None):
+    """
+    IMPROVED: Select the best move using enhanced heuristics and target-aware evaluation.
+    
+    Args:
+        cube_id (int): ID of the cube to move
+        current_positions (np.ndarray): Current cube positions
+        target_centroid (np.ndarray): Target structure centroid
+        udp: UDP instance for validation
+        recent_moves (dict): Dictionary tracking recent moves
+        target_positions (np.ndarray): Target positions for better evaluation
+        cube_types (np.ndarray): Types of current cubes
+        target_cube_types (np.ndarray): Types of target cubes
+        
+    Returns:
+        int: Best move command (0-5), or -1 if no good move found
+    """
+    cube_pos = current_positions[cube_id]
+    cube_type = cube_types[cube_id] if cube_types is not None else None
+    
+    # Evaluate all possible moves with enhanced scoring
+    move_scores = []
+    for move_command in range(6):
+        # Enhanced move evaluation with target awareness
+        score = evaluate_move_quality(
+            cube_pos, move_command, target_centroid, 
+            target_positions, cube_type, target_cube_types
+        )
+        
+        # Apply recent move penalty
+        if move_command in recent_moves[cube_id]:
+            score += 0.1 * recent_moves[cube_id].count(move_command)  # Progressive penalty
+        
+        move_scores.append((score, move_command))
+    
+    # Sort by score (lower is better)
+    move_scores.sort()
+    
+    # Enhanced selection strategy
+    if np.random.random() < EXPLORATION_FACTOR:
+        # Exploration phase
+        if np.random.random() < TEMPERATURE:
+            # Pure random exploration
+            return np.random.randint(0, 6)
+        else:
+            # Weighted exploration from top moves
+            top_moves = move_scores[:min(4, len(move_scores))]
+            scores = np.array([score for score, _ in top_moves])
+            
+            # Softmax probabilities for better exploration
+            exp_scores = np.exp(-scores / TEMPERATURE)
+            probabilities = exp_scores / np.sum(exp_scores)
+            
+            selected_idx = np.random.choice(len(top_moves), p=probabilities)
+            return top_moves[selected_idx][1]
+    else:
+        # Exploitation phase: select from best moves
+        top_moves = move_scores[:min(3, len(move_scores))]
+        
+        if len(top_moves) == 1:
+            return top_moves[0][1]
+        
+        # Weighted selection favoring better moves
+        scores = np.array([score for score, _ in top_moves])
+        max_score = np.max(scores)
+        min_score = np.min(scores)
+        
+        if max_score == min_score:
+            # All moves have same score, random selection
+            return np.random.choice([move for _, move in top_moves])
+        
+        # Invert and normalize scores for probability calculation
+        inverted_scores = max_score - scores + 1e-6
+        probabilities = inverted_scores / np.sum(inverted_scores)
+        
+        selected_idx = np.random.choice(len(top_moves), p=probabilities)
+        return top_moves[selected_idx][1]
+
+
+def build_chromosome(udp):
+    """
+    Build a chromosome using simplified greedy strategy optimized for competitive performance.
+    
+    Args:
+        udp: UDP instance
+        
+    Returns:
+        np.ndarray: Constructed chromosome
+    """
+    # Simplified approach - avoid over-complex initialization that may hurt performance
+    # Build chromosome with enhanced strategy - use competitive but reasonable length
+    chromosome = []
+    # Use more conservative but still competitive length (balance quality vs speed)
+    max_moves = min(MAX_CHROMOSOME_LENGTH, udp.setup['max_cmds'] // 15)  # More reasonable scaling
+    
+    # Track recent moves for each cube
+    recent_moves = defaultdict(list)
+    
+    # Adaptive parameters - simplified approach
+    greedy_factor = GREEDY_FACTOR
+    consecutive_failures = 0
+    max_consecutive_failures = 15  # More tolerant
+    
+    for move_step in range(max_moves):
+        # Simplified adaptive greedy factor
+        if consecutive_failures > max_consecutive_failures:
+            greedy_factor = max(0.4, greedy_factor - 0.05)  # Less aggressive adaptation
+            consecutive_failures = 0
+        
+        # Simplified cube selection - avoid over-complexity
+        if np.random.random() < greedy_factor:
+            # Simple greedy cube selection
+            cube_id = select_greedy_cube(udp, recent_moves)
+        else:
+            # Smart random selection: prefer cubes that haven't been moved recently
+            eligible_cubes = []
+            for i in range(udp.setup['num_cubes']):
+                if len(recent_moves[i]) < RECENT_MOVES_MEMORY // 2:
+                    eligible_cubes.append(i)
+            
+            if eligible_cubes:
+                cube_id = np.random.choice(eligible_cubes)
+            else:
+                cube_id = np.random.randint(0, udp.setup['num_cubes'])
+        
+        if cube_id == -1:
+            consecutive_failures += 1
+            continue
+        
+        # Simplified move selection - avoid over-complexity
+        if np.random.random() < greedy_factor:
+            # Simple greedy move selection
+            move_command = select_greedy_move(cube_id, udp, recent_moves)
+        else:
+            # Smart random move selection: avoid recent moves
+            available_moves = []
+            for move_cmd in range(6):
+                if move_cmd not in recent_moves[cube_id]:
+                    available_moves.append(move_cmd)
+            
+            if available_moves:
+                move_command = np.random.choice(available_moves)
+            else:
+                move_command = np.random.randint(0, 6)
+        
+        if move_command == -1:
+            consecutive_failures += 1
+            continue
+        
+        # Add to chromosome
+        chromosome.extend([cube_id, move_command])
+        
+        # Update recent moves tracking
+        recent_moves[cube_id].append(move_command)
+        if len(recent_moves[cube_id]) > RECENT_MOVES_MEMORY:
+            recent_moves[cube_id].pop(0)
+        
+        # Reset failure counter on successful move
+        consecutive_failures = 0
+        
+        # Continue building chromosome without early stopping to allow competitive solutions
+        # (Early stopping was preventing the algorithm from finding high-quality solutions)
+    
+    # End chromosome with -1
+    chromosome.append(-1)
+    
+    return np.array(chromosome)
+
+
+def select_greedy_cube(udp, recent_moves):
+    """
+    Select a cube using a simplified greedy strategy.
+    
+    Args:
+        udp: UDP instance
+        recent_moves: Dictionary tracking recent moves
+        
+    Returns:
+        int: Selected cube ID
+    """
+    num_cubes = udp.setup['num_cubes']
+    
+    # Simple strategy: select cubes that haven't been moved recently
+    eligible_cubes = []
+    for cube_id in range(num_cubes):
+        if len(recent_moves[cube_id]) < RECENT_MOVES_MEMORY:
+            eligible_cubes.append(cube_id)
+    
+    if not eligible_cubes:
+        eligible_cubes = list(range(num_cubes))
+    
+    # Random selection from eligible cubes
+    return np.random.choice(eligible_cubes)
+
+
+def select_greedy_move(cube_id, udp, recent_moves):
+    """
+    Select a move using a simplified greedy strategy.
+    
+    Args:
+        cube_id: ID of the cube to move
+        udp: UDP instance
+        recent_moves: Dictionary tracking recent moves
+        
+    Returns:
+        int: Selected move command
+          """
