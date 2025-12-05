@@ -261,3 +261,210 @@ def save_convergence_plot(fitness_history, best_fitness_evolution, output_dir, t
     except Exception as e:
         print(f"  • Convergence plot error: {e}")
         return None
+
+
+def random_search_enterprise():
+    """
+    Execute stochastic optimization using random search methodology for the Enterprise assembly problem.
+
+    This function implements a pure random search algorithm as a baseline optimization
+    approach for the large-scale Enterprise spacecraft configuration problem. The method
+    performs uniform random sampling of the solution space to establish benchmark
+    performance metrics for comparative analysis against more sophisticated metaheuristic algorithms.
+
+    The Enterprise problem presents significantly greater complexity compared to ISS,
+    with 1472 programmable cubes requiring more extensive optimization strategies.
+
+    The algorithm maintains detailed performance statistics throughout the optimization
+    process and persists results for subsequent empirical analysis.
+
+    Returns:
+        tuple: (best_chromosome, best_fitness, best_moves, results_data)
+            - best_chromosome: Optimal solution representation found
+            - best_fitness: Corresponding objective function value
+            - best_moves: Number of movement operations in best solution
+            - results_data: Complete experimental results dictionary
+    """
+    print("=" * 80)
+    print("STOCHASTIC OPTIMIZATION: RANDOM SEARCH BASELINE FOR ENTERPRISE ASSEMBLY")
+    print("=" * 80)
+
+    # Initialize pseudorandom number generator for reproducible experiments
+    random.seed(RANDOM_SEED)
+    np.random.seed(RANDOM_SEED)
+
+    # Initialize optimization problem instance
+    print("Initializing User Defined Problem (UDP) for Enterprise configuration...")
+    udp = programmable_cubes_UDP('Enterprise')
+
+    # Extract problem parameters for algorithm configuration
+    num_cubes = udp.setup['num_cubes']
+    max_cmds = udp.setup['max_cmds']
+
+    print(f"Problem Instance Characteristics:")
+    print(f"  • Number of programmable cubes: {num_cubes}")
+    print(f"  • Maximum movement commands: {max_cmds}")
+    print(f"  • Optimization iterations: {N_ITERATIONS}")
+    print(f"  • Random seed (reproducibility): {RANDOM_SEED}")
+    print(f"  • Problem complexity: Large-scale (Enterprise class)")
+    print()
+
+    # Initialize performance tracking variables
+    best_fitness = float('inf')
+    best_chromosome = None
+    best_moves = 0
+    fitness_history = []
+    iteration_best_fitness = []
+
+    # Record experimental metadata
+    start_time = time.time()
+
+    print("Commencing stochastic optimization process...")
+    print()
+
+    # Execute stochastic optimization iterations
+    for iteration in tqdm(range(N_ITERATIONS), desc="Random Search Optimization"):
+        # Generate candidate solution via uniform random sampling
+        # Scale chromosome length appropriately for Enterprise complexity
+        max_chromosome_length = min(2000, max_cmds // 10)
+        chromosome = generate_random_chromosome(num_cubes, max_length=max_chromosome_length)
+
+        # Evaluate objective function
+        fitness = evaluate_chromosome(udp, chromosome)
+        fitness_history.append(fitness)
+
+        # Update global best solution if improvement found
+        if fitness < best_fitness:
+            best_fitness = fitness
+            best_chromosome = chromosome.copy()
+            best_moves = count_moves(chromosome)
+
+            if (iteration + 1) % LOG_INTERVAL == 0:
+                print(
+                    f"Iteration {iteration + 1:4d}: New optimum found | Fitness = {best_fitness:.6f} | Moves = {best_moves}")
+
+        # Record current best for convergence analysis
+        iteration_best_fitness.append(best_fitness)
+
+        # Periodic progress reporting
+        if (iteration + 1) % LOG_INTERVAL == 0 and fitness <= best_fitness:
+            print(
+                f"Iteration {iteration + 1:4d}: Current optimum | Fitness = {best_fitness:.6f} | Moves = {best_moves}")
+
+    # Calculate optimization runtime
+    execution_time = time.time() - start_time
+
+    print()
+    print("=" * 80)
+    print("EXPERIMENTAL RESULTS AND STATISTICAL ANALYSIS")
+    print("=" * 80)
+
+    # Compute performance metrics
+    print(f"Optimization Statistics:")
+    print(f"  • Optimal objective function value: {best_fitness:.6f}")
+    print(f"  • Number of movement operations: {best_moves}")
+    print(f"  • Solution representation length: {len(best_chromosome)}")
+    print(f"  • Computational runtime: {execution_time:.2f} seconds")
+    print(f"  • Iterations per second: {N_ITERATIONS / execution_time:.1f}")
+
+    # Calculate resource utilization metrics
+    efficiency = (1 - best_moves / max_cmds) * 100
+    print(f"  • Resource utilization efficiency: {efficiency:.1f}% ({best_moves}/{max_cmds} commands)")
+
+    # Statistical analysis of fitness distribution
+    fitness_array = np.array(fitness_history)
+    print(f"\nFitness Distribution Analysis:")
+    print(f"  • Mean fitness: {np.mean(fitness_array):.6f}")
+    print(f"  • Standard deviation: {np.std(fitness_array):.6f}")
+    print(f"  • Minimum fitness: {np.min(fitness_array):.6f}")
+    print(f"  • Maximum fitness: {np.max(fitness_array):.6f}")
+
+    print(f"\nOptimal Solution Representation (first 20 elements):")
+    print(best_chromosome[:20], "..." if len(best_chromosome) > 20 else "")
+
+    # Prepare comprehensive results data for comparative analysis
+    results_data = {
+        "algorithm": "Random Search",
+        "problem": "Enterprise",
+        "timestamp": datetime.now().isoformat(),
+        "parameters": {
+            "n_iterations": N_ITERATIONS,
+            "random_seed": RANDOM_SEED,
+            "max_chromosome_length": MAX_CHROMOSOME_LENGTH
+        },
+        "problem_instance": {
+            "num_cubes": num_cubes,
+            "max_commands": max_cmds,
+            "complexity_class": "Large-scale (Enterprise)"
+        },
+        "results": {
+            "best_fitness": float(best_fitness),
+            "best_moves": int(best_moves),
+            "chromosome_length": int(len(best_chromosome)),
+            "execution_time": float(execution_time),
+            "iterations_per_second": float(N_ITERATIONS / execution_time),
+            "resource_efficiency": float(efficiency)
+        },
+        "statistics": {
+            "mean_fitness": float(np.mean(fitness_array)),
+            "std_fitness": float(np.std(fitness_array)),
+            "min_fitness": float(np.min(fitness_array)),
+            "max_fitness": float(np.max(fitness_array))
+        },
+        "convergence_data": {
+            "fitness_history": [float(f) for f in fitness_history],
+            "best_fitness_evolution": [float(f) for f in iteration_best_fitness]
+        },
+        "solution": {
+            "best_chromosome": [int(x) for x in best_chromosome]
+        }
+    }
+
+    # Save experimental results for comparative analysis
+    repo_root_path = os.path.join(os.path.dirname(__file__), '..', '..', '..')
+    results_dir = os.path.join(repo_root_path, 'solver', 'results')
+    results_file = save_experimental_results(results_data, results_dir)
+
+    # Generate and save comprehensive visualizations
+    print(f"\nVisualization and Documentation:")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # Save solution visualizations (achieved vs target)
+    saved_plots = save_solution_visualizations(udp, best_chromosome, results_dir, timestamp)
+
+    # Save convergence analysis plot
+    convergence_plot = save_convergence_plot(fitness_history, iteration_best_fitness, results_dir, timestamp)
+
+    # Update results data with visualization paths
+    visualization_paths = {
+        "results_file": results_file,
+        "plots": saved_plots
+    }
+    if convergence_plot:
+        visualization_paths["convergence_plot"] = convergence_plot
+
+    # Add visualization paths to results data and re-save
+    results_data["visualization_files"] = visualization_paths
+    with open(results_file, 'w') as f:
+        json.dump(results_data, f, indent=2)
+
+    print(f"  • All experimental artifacts saved to: {results_dir}")
+    print(f"  • Results file: {os.path.basename(results_file)}")
+    if saved_plots:
+        for plot_type, path in saved_plots.items():
+            print(f"  • {plot_type.capitalize()} plot: {os.path.basename(path)}")
+    if convergence_plot:
+        print(f"  • Convergence analysis: {os.path.basename(convergence_plot)}")
+
+    print()
+    print("=" * 80)
+    print("STOCHASTIC OPTIMIZATION COMPLETED SUCCESSFULLY")
+    print("Results and visualizations saved for comparative algorithmic analysis")
+    print("=" * 80)
+
+    return best_chromosome, best_fitness, best_moves, results_data
+
+
+if __name__ == "__main__":
+    # Execute stochastic optimization experiment
+    best_chromosome, best_fitness, best_moves, results_data = random_search_enterprise()
