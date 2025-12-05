@@ -35,27 +35,6 @@ Dependencies:
 
 import sys
 import os
-import random
-import numpy as np
-import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend for automated plot generation
-import matplotlib.pyplot as plt
-import time
-import json
-from datetime import datetime
-from tqdm import tqdm
-from scipy.spatial.distance import cdist
-from collections import defaultdict
-
-# Add the src directory and the repository root to the Python path
-repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
-sys.path.insert(0, repo_root)
-sys.path.insert(0, os.path.join(repo_root, 'src'))
-
-from programmable_cubes_UDP import programmable_cubes_UDP
-
-import sys
-import os
 import numpy as np
 import random
 import json
@@ -74,7 +53,7 @@ repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
 
-from programmable_cubes_UDP import programmable_cubes_UDP
+from src.programmable_cubes_UDP import programmable_cubes_UDP
 
 # Advanced Genetic Algorithm Configuration Parameters
 POPULATION_SIZE = 100               # Population size for evolutionary optimization
