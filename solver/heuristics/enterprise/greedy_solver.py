@@ -1,35 +1,35 @@
 #!/usr/bin/env python3
 """
-Greedy Heuristic Optimization for ISS Spacecraft Assembly Problem
-Academic Implementation for GECCO 2024 Space Optimization Competition (SpOC)
+Greedy Heuristic Optimization Algorithm for Enterprise Assembly Problem
+Academic Research Implementation
+Programmable Cubes Challenge - GECCO 2024 Space Optimization Competition (SpOC)
 
-This module implements an advanced greedy heuristic optimization algorithm for the
-International Space Station (ISS) modular spacecraft assembly problem. The approach
-utilizes intelligent cube selection strategies combined with probabilistic exploration
-to achieve superior performance compared to baseline stochastic methods.
+This module implements an advanced greedy heuristic optimization strategy for the 
+Enterprise spacecraft assembly problem, demonstrating superior performance over 
+stochastic baseline approaches through intelligent cube selection and move evaluation.
 
-EXPERIMENTAL PERFORMANCE METRICS:
-- Achieved fitness: 0.052 (20.9% improvement over random search baseline of 0.043)
-- Operational efficiency: 96.7% (200/6000 movement operations utilized)
-- Consistent performance across multiple experimental runs
+Algorithmic Strategy:
+1. Target-aware cube selection with spatial reasoning
+2. Enhanced move evaluation using multiple heuristics
+3. Adaptive exploration-exploitation balance with temperature control
+4. Progressive penalty system for move redundancy prevention
 
-ALGORITHMIC STRATEGY:
-1. Balanced greedy cube selection with recent movement tracking
-2. 70% greedy exploration, 30% stochastic exploration for cube and move selection
-3. Recent movement memory to prevent redundant operations
-4. Probabilistic selection mechanisms for enhanced solution space exploration
+Academic Contributions:
+- Novel hybrid greedy-stochastic approach for large-scale assembly optimization
+- Comprehensive experimental methodology with statistical analysis
+- Performance benchmarking against established baseline algorithms
+- Reproducible research framework with detailed documentation
 
-Academic Usage:
-    python solver/heuristics/iss/greedy_solver.py
+Usage:
+    python solver/heuristics/enterprise/greedy_solver.py
 
-Research Dependencies:
+Dependencies:
     - numpy: Numerical computing and array operations
     - scipy: Scientific computing and spatial analysis
-    - tqdm: Progress monitoring for iterative processes
     - matplotlib: Scientific visualization and plotting
-    - json: Structured data serialization
-    - datetime: Experimental timestamp generation
+    - tqdm: Progress monitoring and user feedback
 """
+
 import sys
 import os
 import numpy as np
@@ -319,7 +319,9 @@ def select_next_cube(current_positions, target_positions, cube_types, target_cub
         # Exploitation: select best cube
         best_cube_idx = np.argmax(cube_scores[eligible_cubes])
         return eligible_cubes[best_cube_idx]
-    def evaluate_move_quality(cube_pos, move_command, target_centroid, target_positions=None, cube_type=None, target_cube_types=None):
+
+
+def evaluate_move_quality(cube_pos, move_command, target_centroid, target_positions=None, cube_type=None, target_cube_types=None):
     """
     IMPROVED: Evaluate move quality using enhanced heuristics and target-aware scoring.
     
@@ -607,8 +609,8 @@ def select_greedy_move(cube_id, udp, recent_moves):
         
     Returns:
         int: Selected move command
-          """
-     # Simple strategy: avoid recent moves, otherwise random
+    """
+    # Simple strategy: avoid recent moves, otherwise random
     available_moves = []
     for move_cmd in range(6):
         if move_cmd not in recent_moves[cube_id]:
@@ -828,7 +830,8 @@ def greedy_heuristic_optimization_enterprise():
             "move_count": int(optimal_moves)
         }
     }
-     # Save experimental results and visualizations
+    
+    # Save experimental results and visualizations
     print("\nGenerating academic documentation and visualizations...")
     try:
         save_experimental_results(experimental_results)
