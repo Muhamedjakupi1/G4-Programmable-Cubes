@@ -532,7 +532,14 @@ class ProgrammableCubes:
             chrom_end: the number of commands issued to reach the final configuration.
         '''
         # Find end point of the chromosome
-        chrom_end = int(np.where(chromosome == -1)[0][0] / 2)
+        chromosome = np.atleast_1d(chromosome)
+
+        end_markers = np.where(chromosome == -1)[0]
+
+        if end_markers.size > 0:
+            chrom_end = int(end_markers[0] / 2)
+        else:
+            chrom_end = int(len(chromosome) / 2)
 
         # Lets roll!
         for i in range(chrom_end):
