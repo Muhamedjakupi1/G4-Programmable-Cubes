@@ -201,7 +201,10 @@ def main():
     challenge_id = "spoc-3-programmable-cubes"
     problem_id = "iss"
 
-    output_file = os.path.join(repo_root, "genetic_algorithm_iss_submission.json")
+    output_file = os.path.join(repo_root,"submissions", "genetic_algorithm_iss_submission.json")
+
+    # Ensure submissions directory exists
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     submission_name = f"Enhanced GA - ISS v4.0"
 
