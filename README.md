@@ -6,14 +6,14 @@ Ky projekt trajton optimizimin e montimit të një strukture hapësinore duke p�
 - Çdo kub mund të rrotullohet rreth kubeve fqinje.  
 - Qëllimi është të gjendet sekuenca më efektive e lëvizjeve që e transformon strukturën sa më afër konfigurimit të synuar.
 - Dallimi midis strukturës finale dhe objektivit matet dhe synohet të minimizohet.
----
+
 ## Instancat e problemit
 Janë analizuar tre konfigurime me madhësi të ndryshme:
 
 - **ISS (International Space Station)** – 148 kube, me limit 6000 komanda  
 - **JWST (James Webb Space Telescope)** – 643 kube, me limit 30000 komanda  
 - **Enterprise** – 1,472 kube, me limit 100000 komanda
----
+
 ## Metodat e zgjidhjes 
 Në projekt janë përdorur tre qasje kryesore:
 
@@ -28,7 +28,7 @@ Në projekt janë përdorur tre qasje kryesore:
 - **Algoritmi Gjenetik**: qasje evolucionare që përdor një grup zgjidhjesh dhe i përmirëson ato gradualisht përmes selektimit, kombinimit (crossover) dhe mutacionit.
 
 - **Algoritmi Gjenetik i Avancuar**: version më i avancuar që punon me disa grupe paralelisht, ruan diversitetin e zgjidhjeve, mban një memorie të zgjidhjeve të mira dhe përdor strategji migrimi për të shmangur ngecjen në zgjidhje lokale.
----
+
 
 ## Struktura e projektit
 ```text
@@ -45,7 +45,7 @@ Në projekt janë përdorur tre qasje kryesore:
 │   └── submission_helper.py   # Competition submission utilities
 └── submissions/               # Files ku gjenerohen zgjidhjet
 ```
----
+
 
 ## Gjuha programuese e përdorur dhe libraritë e përdorura
   - **Python**  
@@ -53,7 +53,7 @@ Në projekt janë përdorur tre qasje kryesore:
 - **Numba** – për optimizim të performancës  
 - **Matplotlib** – për vizualizime  
 - **PyGMO** – për algoritmet e optimizimit
----
+
 
 ## Ekzekutimi i algoritmeve
 Shembuj ekzekutimi për secilin skenar:
