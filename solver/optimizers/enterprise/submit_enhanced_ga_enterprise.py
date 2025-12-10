@@ -29,8 +29,7 @@ repo_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, repo_root)
 sys.path.insert(0, os.path.join(repo_root, 'src'))
 
-from solver.optimizers.enterprise.enhanced_ga_solver import enhanced_genetic_algorithm_enterprise
-
+from solver.optimizers.enterprise.enhanced_ga_solver import genetic_algorithm_enterprise
 
 def create_submission_file(challenge_id, problem_id, decision_vector, fn_out, name="", description=""):
     """
@@ -124,7 +123,7 @@ def main():
 
     # Execute the enhanced genetic algorithm
     print("Executing enhanced multi-population genetic algorithm for Enterprise...")
-    best_chromosome, best_fitness, best_moves = enhanced_genetic_algorithm_enterprise()
+    best_chromosome, best_fitness, best_moves = genetic_algorithm_enterprise()
 
     execution_time = time.time() - start_time
 
