@@ -19,7 +19,7 @@ Në projekt janë përdorur tre qasje kryesore:
 
 ### **1. Baselines**
 - **Random Search**: provon zgjidhje të rastësishme për të pasur një pikë krahasimi.
-- 
+  
 ### **2. Heuristics**
 - **Greedy**: zgjedh lëvizjen më të favorshme në moment, por mund të ngecë në zgjidhje lokale.
 
