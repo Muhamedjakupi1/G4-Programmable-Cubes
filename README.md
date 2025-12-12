@@ -1,62 +1,58 @@
 # Programmable-Cubes
 
-## Përshkrimi i problemit
-Ky projekt trajton optimizimin e montimit të një strukture hapësinore duke përdorur programmable cubes. Detyra konsiston në transformimin e një konfigurimi fillestar të kubeve në një formë të caktuar finale, duke përdorur vetëm lëvizje rrotulluese të lejuara dhe duke respektuar kufizime hapësinore dhe të numrit të komandave.
+## Problem Description
+This project tackles the optimization of assembling a space structure using programmable cubes. The task is to transform an initial cube configuration into a target final shape, using only allowed rotational moves, while respecting space constraints and a maximum command limit.
 
-- Çdo kub mund të rrotullohet rreth kubeve fqinje.  
-- Qëllimi është të gjendet sekuenca më efektive e lëvizjeve që e transformon strukturën sa më afër konfigurimit të synuar.
-- Dallimi midis strukturës finale dhe objektivit matet dhe synohet të minimizohet.
+- Each cube can rotate around neighboring cubes.
+- The goal is to find the most effective sequence of moves that transforms the structure as close as possible to the target configuration.
+- The difference between the obtained final structure and the target is measured and minimized.
 
-## Instancat e problemit
-Janë analizuar tre konfigurime me madhësi të ndryshme:
+## Problem Instances
+Three configurations of different sizes are analyzed:
 
-- **ISS (International Space Station)** – 148 kube, me limit 6000 komanda  
-- **JWST (James Webb Space Telescope)** – 643 kube, me limit 30000 komanda  
-- **Enterprise** – 1,472 kube, me limit 100000 komanda
+- **ISS (International Space Station)** — 148 cubes, command limit 6000
+- **JWST (James Webb Space Telescope)** — 643 cubes, command limit 30000
+- **Enterprise** — 1472 cubes, command limit 100000
 
-## Metodat e zgjidhjes 
-Në projekt janë përdorur tre qasje kryesore:
+## Solution Approaches
+Three main approaches are implemented:
 
-### **1. Baselines**
-- **Random Search**: provon zgjidhje të rastësishme për të pasur një pikë krahasimi.
-  
-### **2. Heuristics**
-- **Greedy**: zgjedh lëvizjen më të favorshme në moment, por mund të ngecë në zgjidhje lokale.
+### 1) Baselines
+- **Random Search**: tries random solutions to provide a comparison baseline.
 
-### **3. Optimizers**
+### 2) Heuristics
+- **Greedy**: chooses the best move at the moment, but may get stuck in local optima.
 
-- **Algoritmi Gjenetik**: qasje evolucionare që përdor një grup zgjidhjesh dhe i përmirëson ato gradualisht përmes selektimit, kombinimit (crossover) dhe mutacionit.
+### 3) Optimizers
+- **Genetic Algorithm (GA)**: an evolutionary approach that improves a population of solutions through selection, crossover, and mutation.
+- **Enhanced Genetic Algorithm**: an advanced version that runs multiple populations in parallel, preserves diversity, keeps memory of good solutions, and uses migration strategies to avoid local optima.
 
-- **Algoritmi Gjenetik i Avancuar**: version më i avancuar që punon me disa grupe paralelisht, ruan diversitetin e zgjidhjeve, mban një memorie të zgjidhjeve të mira dhe përdor strategji migrimi për të shmangur ngecjen në zgjidhje lokale.
-
-
-## Struktura e projektit
+## Project Structure
 ```text
-├── data/spoc3/cubes/          # Të dhënat e kubeve dhe konfigurimet ISS, JWST, Enterprise
+├── data/spoc3/cubes/          # Cube data and configurations (ISS, JWST, Enterprise)
 ├── problems/                  # Problem specification files
-├── solver/                    # Algoritmet optimizuese
-│   ├── baselines/             # Implementimi i random search 
-│   ├── heuristics/            # Implementimi i greedy algorithm 
-│   ├── optimizers/            # Implementimi i genetic algorithm 
-│   └── results/               # Rezultatet dhe vizualizimet
-├── src/                       # Komponentët kryesorë
-│   ├── CubeMoveset.py         # Definimi i cube movement 
-│   ├── programmable_cubes_UDP.py  # PyGMO problem interface
+├── solver/                    # Optimization algorithms
+│   ├── baselines/             # Random search implementation
+│   ├── heuristics/            # Greedy algorithm implementation 
+│   ├── optimizers/            # Genetic algorithm implementations
+│   └── results/               # Results and visualizations
+├── src/                       # Core components
+│   ├── CubeMoveset.py         # Cube movement definitions
+│   ├── programmable_cubes_UDP.py  # PyGMO problem interfac
 │   └── submission_helper.py   # Competition submission utilities
-└── submissions/               # Files ku gjenerohen zgjidhjet
+└── submissions/               # Generated solution files
 ```
 
 
-## Gjuha programuese e përdorur dhe libraritë e përdorura
-  - **Python**  
-- **NumPy** – për llogaritje numerike  
-- **Numba** – për optimizim të performancës  
-- **Matplotlib** – për vizualizime  
-- **PyGMO** – për algoritmet e optimizimit
+## Programming Language and Libraries
+- **Python**
+- **NumPy** — numerical computations
+- **Numba** — performance optimization
+- **Matplotlib** — visualizations
+- **PyGMO** — optimization algorithms
 
-
-## Ekzekutimi i algoritmeve
-Shembuj ekzekutimi për secilin skenar:
+## Running the Algorithms
+Example run scenarios:
 
 ```bash
 python solver/optimizers/iss/submit_ga_iss.py
